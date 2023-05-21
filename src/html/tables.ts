@@ -1,4 +1,18 @@
-export const convertHtmlTables = (htmlTable: string): string =>
+export const convertHtmlTables = (xml: string, eventLogger: any): string => {
+    if (!/<table[\s\S]+?<\/table>/g.test(xml)) {
+        eventLogger.logInfo("No tables found");
+        return xml;
+    }
+
+    let tableArray = [...xml.match(/<table[\s\S]+?<\/table>/g)]; // Put all tables in an array
+
+    for (let table of tableArray)
+        xml = xml.replace(table, processTables(table, eventLogger));
+
+    return xml;
+}
+
+export const processTables = (htmlTable: string, eventLogger: any): string =>
 {
     try
     {
@@ -113,7 +127,7 @@ export const convertHtmlTables = (htmlTable: string): string =>
         return formattedDitaTable;
     } catch (error)
     {
-        console.error(error);
+        eventLogger.logWarning(`Unable to convert HTML table to DITA XML table. Ignoring HTML table. (Error Code: C5)\n${error}`);
         return '<table outputclass="frame all rules all"><tgroup cols="0"></tgroup></table>';
     }
 }

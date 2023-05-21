@@ -1,7 +1,9 @@
 import { BaseDitaRenderer } from "./defaultRenderer";
 
-export class ReferenceRenderer extends BaseDitaRenderer{
-    constructor() {
+export class ReferenceRenderer extends BaseDitaRenderer
+{
+    constructor()
+    {
         super();
 
         this.md.renderer.rules.heading_open = (tokens, idx) => tokens[idx].tag === 'h1' ? `<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">\n<reference id="<tbd>">\n<title>` : `<section>\n<title>`;
@@ -10,12 +12,19 @@ export class ReferenceRenderer extends BaseDitaRenderer{
 
     }
 
-    toDitaReference(markdown: string): string {
-        markdown = this.md.render(markdown);
+    toDitaReference(markdown: string): string
+    {
+        try 
+        {
+            markdown = this.md.render(markdown);
 
-        if (!/<\?xml version="1.0" encoding="utf-8"\?>/.test(markdown))
-            throw "NoHeaders";
-
-        return `${markdown}\n</refbody>\n</reference>`;
+            if (!/<\?xml version="1.0" encoding="utf-8"\?>/.test(markdown))
+                throw "NoHeaders";
+    
+            return `${markdown}\n</refbody>\n</reference>`;
+        } catch (error) 
+        {
+            console.error(error);
+        }
     }
 }

@@ -1,6 +1,5 @@
 const generateSections = (xml: string, type: number) => 
 {
-
     let conceptBody = type === 1 ? xml.match(/<conbody[\s\S]+?<\/conbody>/)[0] : xml.match(/<refbody[\s\S]+?<\/refbody>/)[0]; // Get all the content inside the conbody/refbody element
     conceptBody = type === 1 ? conceptBody.replace(/<conbody>/, ``) : conceptBody.replace(/<refbody>/, ``);
     conceptBody = type === 1 ? conceptBody.replace(/<\/conbody>/, ``) : conceptBody.replace(/<\/refbody>/, ``);
@@ -29,17 +28,21 @@ const generateSections = (xml: string, type: number) =>
 
 export const fixSections = (xml: string, type: number) => 
 {
-    let auxArray = generateSections(xml, type);
-    let tempReplacement: string;
-
-    if (auxArray.length === 0)
+    try {
+        let auxArray = generateSections(xml, type);
+        let tempReplacement: string;
+    
+        if (auxArray.length === 0)
+            return xml;
+    
+        for (let element of auxArray) 
+        {
+            tempReplacement = `${element.replace(/<\/section>/, ``)}\n</section>\n`;
+            xml = xml.replace(element, tempReplacement);
+        }
+    
         return xml;
-
-    for (let element of auxArray) 
-    {
-        tempReplacement = `${element.replace(/<\/section>/, ``)}\n</section>\n`;
-        xml = xml.replace(element, tempReplacement);
+    } catch (error) {
+        console.error(error)
     }
-
-    return xml;
 };
