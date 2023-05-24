@@ -1,7 +1,7 @@
 export const deleteExtraHTMLTags = (xml: string, eventLogger: any) =>
 {
     try {
-        console.info(`[Info] Deleting unnecessary HTML tags.`);
+        eventLogger.logInfo(`Deleting unnecessary HTML tags.`);
     
         xml = xml.replace(/<(span|div|p|i|pre|li)[^>]*class\s*=\s*['"]code['"][^>]*>([\s\S]*?)<\/(span|div|p|i|pre|li)>/g, '<codeblock>$2</codeblock>');
         xml = xml.replace(/<(span|div|p|i|pre|li)[^>]*class\s*=\s*['"]note['"][^>]*>([\s\S]*?)<\/(span|div|p|i|pre|li)>/g, '<note>$2</note>');
@@ -20,6 +20,7 @@ export const deleteExtraHTMLTags = (xml: string, eventLogger: any) =>
     
         return xml;
     } catch (error) {
-        eventLogger.logWarning(`Unable to delete unecessary HTML tags. Verify the resulting DITA file afterwards. (Error Code: C4)\n${error}`);
+        eventLogger.logWarning(`Unable to delete unecessary HTML tags. Verify the resulting DITA file afterwards. (Error Code: 104)\n${error}`);
+        return xml;
     }
 }

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@xmldom/xmldom": "^0.8.7",
     "markdown-it": "^13.0.1"
   },
   "devDependencies": {

@@ -1,7 +1,10 @@
-export const fixConceptReference = (xml: string, type: number) =>
+import { fixSections } from "./sections";
+
+export const fixConceptReference = (xml: string, type: number, eventLogger: any) =>
 {
     try
     {
+        xml = type === 1 ? fixSections(xml, 1, eventLogger) : fixSections(xml, 2, eventLogger);
         // Step 3: Extract id attribute value from concept tag
         let id = xml.match(/<title>(.*?)<\/title>/)[0];
         id = id.replace(`<title>`, ``).replace(`</title>`, ``);
@@ -11,11 +14,12 @@ export const fixConceptReference = (xml: string, type: number) =>
 
         xml = type === 1 ? xml.replace(/<concept\s+.*?id=".*?"/, `<concept id="${id}"`) : xml.replace(/<reference\s+.*?id=".*?"/, `<reference id="${id}"`);
 
-        console.info(`[Info] Transformed markdown to DITA Concept/Reference.`);
+        eventLogger.logInfo(`Transformed markdown to DITA Concept/Reference.`);
 
         return xml;
     } catch (error)
     {
-        console.error(error);
+        eventLogger.logError(`Unable to convert document to DITA XML. Please try again. (Error Code: 301)\n${error}`);
+        return ``;
     }
 }

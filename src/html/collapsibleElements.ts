@@ -1,18 +1,19 @@
 export const fixCollapsibleElements = (markdown: string, eventLogger: any) =>
 {
+    console.log(markdown);
     try {
         const findCollapsibleElements = /\?\?\?\s"[^\n]*/g;
 
         if (!findCollapsibleElements.test(markdown))
         {
-            console.info(`[Info] No collapsible elements detected.`);
+            eventLogger.logInfo(`No collapsible elements detected.`);
             return markdown;
         }
     
-        console.warn(`[Warning] Collapsible elements detected. The script will remove whitespace and indentation from the file. If the file contains codeblocks, verify the indentation afterwards.`);
+        eventLogger.logWarning(`Collapsible elements detected. The script will remove whitespace and indentation from the file. If the file contains codeblocks, verify the indentation afterwards.`);
     
         let lines = markdown.split('\n');
-        let tempReplacement: string;
+        let tempReplacement: string = ``;
     
         for (let element of lines)
             tempReplacement = tempReplacement + `${element.trim()}\n`; // Removing whitespace
@@ -38,11 +39,11 @@ export const fixCollapsibleElements = (markdown: string, eventLogger: any) =>
             markdown = markdown.replace(element, tempReplacement);
         }
     
-        console.info(`[Info] Changed collapsible elements to <title> elements.`);
-    
+        eventLogger.logInfo(`Changed collapsible elements to <title> elements.`);
+
         return markdown;
     } catch (error) {
-        eventLogger.logWarning(`Unable to convert collapsible elements. Verify the resulting DITA file afterwards. (Error code:\n${error}`)
+        eventLogger.logWarning(`Unable to convert collapsible elements. Verify the resulting DITA file afterwards. (Error code: 101)\n${error}`)
         return markdown;
     }
 }

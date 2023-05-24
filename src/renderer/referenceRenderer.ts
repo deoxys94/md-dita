@@ -12,7 +12,7 @@ export class ReferenceRenderer extends BaseDitaRenderer
 
     }
 
-    toDitaReference(markdown: string): string
+    toDitaReference(markdown: string, eventLogger: any): string
     {
         try 
         {
@@ -22,9 +22,10 @@ export class ReferenceRenderer extends BaseDitaRenderer
                 throw "NoHeaders";
     
             return `${markdown}\n</refbody>\n</reference>`;
-        } catch (error) 
+        } catch (error)
         {
-            console.error(error);
+            eventLogger.logError(`Unable to convert document to DITA XML. Verify your file is properly formatted and try again. (Error code: 202)\n${error}`);
+            return ``;
         }
     }
 }

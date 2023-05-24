@@ -1,6 +1,6 @@
 import { generateSubTasks } from "./subtasks";
 
-export const fixTask = (xml: string) =>
+export const fixTask = (xml: string, eventLogger: any) =>
 {
     try 
     {
@@ -10,7 +10,7 @@ export const fixTask = (xml: string) =>
         id = id.replace(/[^A-Za-z0-9 ]/g, "").replace(/\s+/g, "_"); // Step 4: Modify and insert the id attribute value back into the task tag
         xml = xml.replace(/<task\s+.*?id=".*?"/, `<task id="${id}"`);
     
-        let auxArray = generateSubTasks(xml);
+        let auxArray = generateSubTasks(xml, eventLogger);
         let tempReplacement: string;
     
         if (auxArray.length > 0)
@@ -69,6 +69,7 @@ export const fixTask = (xml: string) =>
     
         return xml;    
     } catch (error) {
-        console.error(error);
+        eventLogger.logError(`Unable to convert document to DITA XML. Please try again. (Error Code: 303)\n${error}`);
+        return ``;
     }
 };

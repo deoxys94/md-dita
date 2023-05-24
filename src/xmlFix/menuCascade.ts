@@ -1,4 +1,4 @@
-export const menuCascade = (xml: string) => 
+export const menuCascade = (xml: string, eventLogger: any) => 
 {
     try {
         let auxArray = [];
@@ -6,7 +6,7 @@ export const menuCascade = (xml: string) =>
     
         if (!/<checkMenu>(.|\n)*?<\/checkMenu>/g.test(xml)) 
         {
-            console.info(`[Info] No menu paths found.`);
+            eventLogger.logInfo(`No menu paths found.`);
             return xml;
         }
     
@@ -34,10 +34,11 @@ export const menuCascade = (xml: string) =>
             xml = xml.replace(element, tempReplacement);
         }
     
-        console.info(`[Info] Converted menu paths to <menucascade> elements.`);
+        eventLogger.logInfo(`Converted menu paths to <menucascade> elements.`);
         return xml;
     } catch (error) 
     {
-        console.error(error)
+        eventLogger.logError(`Unable to convert menu paths to menu cascades. Verify the resulting file afterwards. (Error Code: 302)\n${error}`);
+        return xml;
     }
 }

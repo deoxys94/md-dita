@@ -1,4 +1,4 @@
-const generateSections = (xml: string, type: number) => 
+const generateSections = (xml: string, type: number,  eventLogger: any) => 
 {
     let conceptBody = type === 1 ? xml.match(/<conbody[\s\S]+?<\/conbody>/)[0] : xml.match(/<refbody[\s\S]+?<\/refbody>/)[0]; // Get all the content inside the conbody/refbody element
     conceptBody = type === 1 ? conceptBody.replace(/<conbody>/, ``) : conceptBody.replace(/<refbody>/, ``);
@@ -8,7 +8,7 @@ const generateSections = (xml: string, type: number) =>
 
     if (!/<section>/g.test(conceptBody)) 
     { // If there are no sections, return
-        console.info(`[Info] No sections detected.`);
+        eventLogger.logInfo(`No sections detected.`);
         return [];
     }
 
@@ -22,14 +22,14 @@ const generateSections = (xml: string, type: number) =>
 
     sections.push(conceptBody.match(/(<section>)[\s\S]*/)[0]); // Grab the "lonely" subsection
 
-    console.log(`[Info] sections generated.`);
+    eventLogger.logInfo(`Sections generated.`);
     return sections;
 };
 
-export const fixSections = (xml: string, type: number) => 
+export const fixSections = (xml: string, type: number,  eventLogger: any) => 
 {
     try {
-        let auxArray = generateSections(xml, type);
+        let auxArray = generateSections(xml, type, eventLogger);
         let tempReplacement: string;
     
         if (auxArray.length === 0)
@@ -43,6 +43,7 @@ export const fixSections = (xml: string, type: number) =>
     
         return xml;
     } catch (error) {
-        console.error(error)
+        eventLogger.logError(`Unable to generate sections`);
+        return;
     }
 };

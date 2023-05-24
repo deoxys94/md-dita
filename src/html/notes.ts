@@ -1,4 +1,4 @@
-export const convertNotes = (xml: string) =>
+export const convertNotes = (xml: string, eventLogger: any) =>
 {
     try {
         let auxArray = [];
@@ -6,7 +6,7 @@ export const convertNotes = (xml: string) =>
     
         if (!/<p[\s\S]+?<\/p>/g.test(xml))
         {
-            console.log("[Info] No notes found");
+            eventLogger.logInfo("No notes found");
             return xml;
         }
     
@@ -27,9 +27,10 @@ export const convertNotes = (xml: string) =>
                 xml = xml.replace(element, `<note type="warning">${element.replace(/{[\s\S]+?}/, ``)}</note>`);
         }
     
-        console.info(`[Info] Converted notes to DITA XML notes.`);
+        eventLogger.logInfo(`Converted notes to DITA XML notes.`);
         return xml;
     } catch (error) {
-        console.error(error);
+        eventLogger.logWarning(`Unable to convert notes to DITA. Verify the resulting DITA file afterwards. (Error Code: 105)\n${error}`);
+        return xml;
     }
 }

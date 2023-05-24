@@ -12,7 +12,7 @@ export class ConceptRenderer extends BaseDitaRenderer
 
     }
 
-    toDitaConcept(markdown: string): string
+    toDitaConcept(markdown: string, eventLogger: any): string
     {
         try
         {
@@ -24,7 +24,8 @@ export class ConceptRenderer extends BaseDitaRenderer
             return `${markdown}\n</conbody>\n</concept>`;
         } catch (error)
         {
-            console.error(error);
+            eventLogger.logError(`Unable to convert document to DITA XML. Verify your file is properly formatted and try again. (Error code: 201)\n${error}`);
+            return ``;
         }
     }
 }

@@ -5,7 +5,7 @@ export const findConrefs = (markdown: string, eventLogger: any) =>
 
         if (!regexConref.test(markdown))
         {
-            console.info(`[Info] No conrefs detected.`);
+            eventLogger.logInfo(`No conrefs detected.`);
             return markdown;
         }
     
@@ -21,7 +21,7 @@ export const findConrefs = (markdown: string, eventLogger: any) =>
         console.info(`[Info] Replaced all conrefs.`);
         return markdown;
     } catch (error) {
-        eventLogger.logWarning(`Unable to replace conrefs. Verify the resulting DITA file afterwards. (Error code: C1)\n${error}`);
+        eventLogger.logWarning(`Unable to replace conrefs. Verify the resulting DITA file afterwards. (Error code: 102)\n${error}`);
         return markdown;
     }
 }

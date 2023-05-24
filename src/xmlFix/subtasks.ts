@@ -1,4 +1,4 @@
-export const generateSubTasks = (xml: string) => 
+export const generateSubTasks = (xml: string, eventLogger: any) => 
 {
     let taskBody = xml.match(/<taskbody[\s\S]+?<\/taskbody>/)[0]; // Get all the content inside the taskbody element
     taskBody = taskBody.replace(/<taskbody>/, ``); // Delete the taskbody tags
@@ -7,7 +7,7 @@ export const generateSubTasks = (xml: string) =>
 
     if (!/<title>/g.test(taskBody)) 
     { // If there are no subtasks, return
-        console.log(`%c[Info] No subtasks detected.`, `color:green`);
+        eventLogger.logInfo(`No subtasks detected.`);
         return [];
     }
 
@@ -21,6 +21,6 @@ export const generateSubTasks = (xml: string) =>
 
     subTasks.push(taskBody.match(/(<title>)[\s\S]*/)[0]); // Grab the "lonely" subtask
 
-    console.log(`%c[Info] Subtasks generated.`, `color:green`);
+    eventLogger.logInfo(`Subtasks generated.`);
     return subTasks;
 };

@@ -19,7 +19,7 @@ export class TaskRenderer extends BaseDitaRenderer
         this.md.renderer.rules.ordered_list_close = (tokens, idx) => tokens[idx].level === 0 ? '\n</steps>\n' : this.md.renderer.renderToken(tokens, idx);
     }
 
-    toDitaTask(markdown: string): string
+    toDitaTask(markdown: string, eventLogger: any): string
     {
         try
         {
@@ -31,7 +31,8 @@ export class TaskRenderer extends BaseDitaRenderer
             return `${markdown}</taskbody>\n</task>`;
         } catch (error)
         {
-            console.error(error)
+            eventLogger.logError(`Unable to convert document to DITA XML. Verify your file is properly formatted and try again. (Error code: 203)\n${error}`);
+            return ``;
         }
     }
 }
