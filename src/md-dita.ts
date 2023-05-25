@@ -11,6 +11,7 @@ import { fixConceptReference } from "./xmlFix/conceptReferenceFix";
 import { menuCascade } from "./xmlFix/menuCascade";
 import { fixSections } from "./xmlFix/sections";
 import { fixTask } from "./xmlFix/taskFix";
+import { fixAnchorId } from "./xmlFix/anchorFix";
 
 class simpleLogger
 {
@@ -45,6 +46,7 @@ class simpleLogger
         this._logContainer.push(message);
 
         console.error(message);
+        console.trace();
     }
 
     public logInfo(message: string)
@@ -72,13 +74,34 @@ export class MdDita
 
     private fixCommonElements(markdown: string)
     {
-        markdown = markdown.replace(/([\s\S]+?)(?=\s#\s)/, ``); // Remove slugs
         markdown = markdown.trimStart();
 
         markdown = deleteExtraHTMLTags(markdown, this.eventLogger);
         markdown = findConrefs(markdown, this.eventLogger);
         markdown = fixCollapsibleElements(markdown, this.eventLogger);
         markdown = fixFootnotes(markdown, this.eventLogger);
+
+        return markdown;
+    }
+
+    private fixPendingTasks(markdown: string, type: number)
+    {
+        let topicId: string = '';
+        
+        markdown = markdown.replace(/([\s\S]+?)(?=\s<\?xml version="1\.0" encoding="utf-8"\?>\s)/, ``); // Remove slugs
+        markdown = markdown.replace(/href="http/g, `format="html" scope="external" href="http`);
+
+        // Fix any internal anchors.
+        if (type === 1)
+            topicId = markdown.match(/<concept id=\"(.*?)\">/)[0].replace(/<concept id=\"/, ``).replace(/">/, ``);
+        if (type === 2)
+            topicId = markdown.match(/<reference id=\"(.*?)\">/)[0].replace(/<reference id=\"/, ``).replace(/">/, ``);
+        if (type === 3)
+            topicId = markdown.match(/<task id=\"(.*?)\">/)[0].replace(/<task id=\"/, ``).replace(/">/, ``);
+
+        markdown = markdown.replace(/href="#/g, `href="#${topicId}/`);
+        markdown = fixAnchorId(markdown, this.eventLogger);
+
 
         return markdown;
     }
@@ -111,7 +134,7 @@ export class MdDita
         if (markdown === ``)
             return ``;
 
-        markdown = markdown.replace(/href="http/g, `format="html" scope="external" href="http`);
+        markdown = this.fixPendingTasks(markdown, 1);
 
         return markdown;
     }
@@ -143,7 +166,7 @@ export class MdDita
         if (markdown === ``)
             return ``;
 
-        markdown = markdown.replace(/href="http/g, `format="html" scope="external" href="http`);
+        markdown = this.fixPendingTasks(markdown, 2);
 
         return markdown;
     }
@@ -175,7 +198,7 @@ export class MdDita
         if (markdown === ``)
             return ``;
 
-        markdown = markdown.replace(/href="http/g, `format="html" scope="external" href="http`);
+        markdown = this.fixPendingTasks(markdown, 3);
 
         return markdown;
     }

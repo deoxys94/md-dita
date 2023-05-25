@@ -32,7 +32,7 @@ export abstract class BaseDitaRenderer {
             const hrefIndex = tokens[idx].attrIndex('href');
             const hrefAttr = tokens[idx].attrs[hrefIndex];
             const hrefValue = hrefAttr[1];
-            return hrefValue.startsWith('#') ? `<xref>` : `<xref href="${hrefValue}">`;
+            return `<xref href="${hrefValue}">`;
         };
 
         this.md.renderer.rules.link_close = () => '</xref>';

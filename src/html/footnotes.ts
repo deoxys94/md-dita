@@ -11,12 +11,12 @@ export const fixFootnotes = (markdown: string, eventLogger: any) =>
     
         let auxArray = [...markdown.match(findFootnotes)];
     
-        markdown = markdown.replace(auxArray[0], `<!-- Fix footnotes manually \n ${auxArray[0].replace(/<!--/g, ``).replace(/-->/g, ``)} -->\n`);
+        markdown = markdown.replace(auxArray[0], auxArray[0].replace(/(\*\*Footnotes:\*\*)/, `## Footnotes: `));
     
-        eventLogger.logInfo(`Commented out footnotes.`);
+        eventLogger.logInfo(`Converted footnotes.`);
         return markdown;
     } catch (error) {
-        eventLogger.logWarning(`Unable to comment out footnotes. Verify the resulting DITA file afterwards. (Error Code: 103)\n${error}`);
+        eventLogger.logWarning(`Unable to convert footnotes. Verify the resulting DITA file afterwards. (Error Code: 103)\n${error}`);
         return markdown;
     }
 }

@@ -1,6 +1,5 @@
 export const fixCollapsibleElements = (markdown: string, eventLogger: any) =>
 {
-    console.log(markdown);
     try {
         const findCollapsibleElements = /\?\?\?\s"[^\n]*/g;
 

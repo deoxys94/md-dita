@@ -8,7 +8,7 @@ export const deleteExtraHTMLTags = (xml: string, eventLogger: any) =>
         xml = xml.replace(/<(span|div|p|i|pre|li)[^>]*class\s*=\s*['"]tip['"][^>]*>([\s\S]*?)<\/(span|div|p|i|pre|li)>/g, '<note type="tip">$2</note>');
         xml = xml.replace(/<(span|div|p|i|pre|li)[^>]*class\s*=\s*['"]ui['"][^>]*>([\s\S]*?)<\/(span|div|p|i|pre|li)>/g, '<checkMenu>$2</checkMenu>');
         xml = xml.replace(/<[^>]*(href\s*=\s*['"][^'"]*['"][^>]*)>([\s\S]*?)<\/[^>]+>/g, '<xref $1>$2</xref>');
-        xml = xml.replace(/(<a name[\s\S]+?<\/a>)/g, `<!-- Unsure what these tags are for. Commenting them out... $1 -->`);
+        xml = xml.replace(/<a[^>]*name\s*=\s*['"]([^'"]*)['"][^>]*>.*?<\/a>/g, `<p id="$1"></p>`);
         xml = xml.replace(/<strong>([\s\S]*?)<\/strong>/g, '<term>$1</term>');
         xml = xml.replace(/<code>([\s\S]*?)<\/code>/g, '<codeblock>$1</codeblock>');
         xml = xml.replace(/<pre>/g, ``);
