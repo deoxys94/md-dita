@@ -1,9 +1,10 @@
 {
     "compilerOptions": {
-        "module": "ES2015",
+        "module": "CommonJS",
         "target": "ES2017",
         "outDir": "./dist",
-        "removeComments": true
+        "removeComments": true,
+        "moduleResolution": "node"
     },
     "include": ["src/**/*"],
     "exclude": [
