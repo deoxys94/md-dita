@@ -1,4 +1,6 @@
 node_modules/
 testing/
+dist/
+.vscode/
 *.md
 *.xml
