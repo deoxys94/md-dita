@@ -33,8 +33,9 @@ export const fixSections = (xml: string, type: number,  eventLogger: any) =>
         let tempReplacement: string;
     
         if (auxArray.length === 0)
-            return xml;
-    
+            return (type === 1) ? xml : xml.replace(/<refbody>/, `<refbody>\n<section>`).replace(/<\/refbody>/, `</section>\n</refbody>`);
+        
+
         for (let element of auxArray) 
         {
             tempReplacement = `${element.replace(/<\/section>/, ``)}\n</section>\n`;

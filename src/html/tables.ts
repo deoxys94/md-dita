@@ -1,4 +1,9 @@
-import * as cheerio from 'cheerio';
+let cheerio;
+//import * as cheerio from 'cheerio';
+
+const importCheerio = async () => {
+    cheerio = await import('cheerio');
+}
 
 export const convertHtmlTables = (xml: string, eventLogger: any): string =>
 {
@@ -18,6 +23,8 @@ export const convertHtmlTables = (xml: string, eventLogger: any): string =>
 
 function htmlToDitaTable(html: string, eventLogger: any): string
 {
+    importCheerio();
+    
     try
     {
         const $ = cheerio.load(html);

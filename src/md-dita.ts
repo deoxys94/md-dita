@@ -9,7 +9,6 @@ import { ReferenceRenderer } from "./renderer/referenceRenderer";
 import { TaskRenderer } from "./renderer/taskRenderer";
 import { fixConceptReference } from "./xmlFix/conceptReferenceFix";
 import { menuCascade } from "./xmlFix/menuCascade";
-import { fixSections } from "./xmlFix/sections";
 import { fixTask } from "./xmlFix/taskFix";
 import { fixAnchorId } from "./xmlFix/anchorFix";
 
