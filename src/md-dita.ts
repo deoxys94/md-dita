@@ -97,7 +97,7 @@ export class MdDita
         if (type === 3)
             topicId = markdown.match(/<task id=\"(.*?)\">/)[0].replace(/<task id=\"/, ``).replace(/">/, ``);
 
-        markdown = markdown.replace(/href="#/g, `href="${topicId}/`);
+        markdown = markdown.replace(/href="#/g, `href="#${topicId}/`);
         markdown = markdown.replace(/href="http/g, `format="html" scope="external" href="http`);
         markdown = markdown.replace(/<term><sup>/g, `<sup>`);
         markdown = markdown.replace(/<\/sup><\/term>/g, `</sup>`)
