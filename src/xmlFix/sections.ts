@@ -42,6 +42,12 @@ export const fixSections = (xml: string, type: number,  eventLogger: any) =>
             xml = xml.replace(element, tempReplacement);
         }
     
+        if(type === 2)
+        {
+            if(!/<refbody>\n<section>/.test(xml))
+                xml = xml.replace(/<section>/, `</section>\n<section>`).replace(/<refbody>/, `<refbody>\n<section>`)
+        }
+
         return xml;
     } catch (error) {
         eventLogger.logError(`Unable to generate sections`);

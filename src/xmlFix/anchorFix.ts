@@ -1,6 +1,6 @@
 export const fixAnchorId = (xmlString: string, eventLogger: any): string => 
 {
-    eventLogger.logInfo(`Fixing anchors.`);
+    eventLogger.logInfo(`Adding IDs.`);
     let titleArray = [...xmlString.match(/<title[\s\S]+?<\/title>/g)];
     let anchorID: string;
     let tempReplacement: string;
@@ -13,11 +13,8 @@ export const fixAnchorId = (xmlString: string, eventLogger: any): string =>
         tempReplacement = element.replace(/<title>/, `<title id="${anchorID.replace(`{`, ``).replace(`}`, ``)}">`).replace(/\{(#.*?)\}/, ``);
         tempReplacement = tempReplacement.replace(`id="#`, `id="`);
 
-        console.log(tempReplacement);
-
         xmlString = xmlString.replace(element, tempReplacement);
     }
     
     return xmlString;
 }
-

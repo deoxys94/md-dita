@@ -18,7 +18,7 @@ export const findConrefs = (markdown: string, eventLogger: any) =>
             markdown = markdown.replace(element, `<draft-comment>Import the contents of ${tempReplacement} here.</draft-comment>\n`);
         }
     
-        console.info(`[Info] Replaced all conrefs.`);
+        eventLogger.logInfo(`Replaced all conrefs.`);
         return markdown;
     } catch (error) {
         eventLogger.logWarning(`Unable to replace conrefs. Verify the resulting DITA file afterwards. (Error code: 102)\n${error}`);
