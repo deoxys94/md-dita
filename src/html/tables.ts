@@ -11,13 +11,79 @@ export const convertHtmlTables = (xml: string, eventLogger: any): string =>
     let tableArray = [...xml.match(/<table[\s\S]+?<\/table>/g)]; // Put all tables in an array
 
     for (let table of tableArray)
-        xml = xml.replace(table, htmlToDitaTable(table, eventLogger));
+        xml = xml.replace(table, htmlToDitaTable(unmergeCells(table), eventLogger));
 
     return xml;
 }
 
+const  unmergeCells = (html: string): string =>
+{
+    // Load the HTML string into Cheerio
+    let $ = cheerio.load(html);
+
+    // Remove col and colgroup elements
+    $('col, colgroup').remove();
+
+    // Find the table element
+    let table = $('table');
+
+    // Loop through each row
+    table.find('tr').each((rowIndex, row) =>
+    {
+        // Loop through each cell in the row
+        $(row).find('td, th').each((colIndex, cell) =>
+        {
+            let colspan = parseInt($(cell).attr('colspan') || '1');
+            let rowspan = parseInt($(cell).attr('rowspan') || '1');
+
+            // Check if the cell is inside the thead element
+            let isHeaderCell = $(cell).parents('thead').length > 0;
+
+            // Unmerge cells with colspan inside thead
+            if (isHeaderCell && colspan > 1)
+            {
+                // Remove the colspan attribute
+                $(cell).removeAttr('colspan');
+
+                // Insert individual cells to replace the merged cell
+                for (let i = 1; i < colspan; i++)
+                {
+                    $(cell).after('<th></th>');
+                }
+            }
+
+            // Unmerge cells with rowspan
+            if (rowspan > 1)
+            {
+                // Remove the rowspan attribute
+                $(cell).removeAttr('rowspan');
+
+                // Insert individual cells in subsequent rows
+                let currentRow = $(row);
+                for (let i = 1; i < rowspan; i++)
+                {
+                    let nextRow = currentRow.next('tr');
+                    if (nextRow.length === 0)
+                    {
+                        // Insert a new row if it doesn't exist
+                        currentRow.after('<tr></tr>');
+                    }
+
+                    let newRow = currentRow.next('tr');
+                    newRow.append(isHeaderCell ? '<th></th>' : '<td></td>');
+                    currentRow = newRow;
+                }
+            }
+        });
+    });
+
+    let result = $.html()
+    // Return the modified HTML
+    return result.replace(/<html><head><\/head><body>/, ``).replace(/<\/body><\/html>/, ``);;
+}
+
 function htmlToDitaTable(html: string, eventLogger: any): string
-{    
+{
     try
     {
         const $ = cheerio.load(html);
@@ -42,7 +108,10 @@ function htmlToDitaTable(html: string, eventLogger: any): string
         ditaTable.push('<table>');
 
         // Add colspecs
-        const colCount = $('thead th').length || $('thead td').length;
+        let colCountAux = html.match(/<tr[\s\S]+?<\/tr>/)[0]
+        let colCount = (colCountAux.match(/<th>/g) || []).length;
+        //let colCount = $('thead tr th').length || $('thead tr td').length;
+        
         ditaTable.push('<tgroup cols="' + colCount + '">');
         for (let i = 0; i < colCount; i++)
         {
@@ -50,14 +119,24 @@ function htmlToDitaTable(html: string, eventLogger: any): string
         }
 
         // Add thead
+        colCountAux = html.match(/<thead[\s\S]+?<\/thead>/)[0]
+        let theadAux = [...colCountAux.match(/<tr[\s\S]+?<\/tr>/g)]
+
         ditaTable.push('<thead>');
-        ditaTable.push('<row>');
-        $('thead th, thead td').each((i, elem) =>
+
+        for(let element of theadAux)
         {
-            ditaTable.push('<entry>' + wrapInPTags($(elem).html()) + '</entry>');
-        });
-        ditaTable.push('</row>');
+            element = element.replace(/<tr>/g, `<row>`)
+            .replace(/<\/tr>/g, `</row>`)
+            .replace(/<th>/g, `<entry><p>`)
+            .replace(/<\/th>/g, `</p></entry>`);
+
+            ditaTable.push(element);
+        }
+
         ditaTable.push('</thead>');
+
+        console.log(ditaTable)
 
         // Add tbody
         ditaTable.push('<tbody>');

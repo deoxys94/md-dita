@@ -18,7 +18,8 @@ export const deleteExtraHTMLTags = (xml: string, eventLogger: any) =>
         xml = xml.replace(/<hr\s*\/?>/g, ``);
         xml = xml.replace(/<\/br>/g, ``);
         xml = xml.replace(/<\/hr>/g, ``);
-    
+        xml = xml.replace(/\sstyle\s*=\s*"[^"]*"/, ``);
+
         return xml;
     } catch (error) {
         eventLogger.logWarning(`Unable to delete unecessary HTML tags. Verify the resulting DITA file afterwards. (Error Code: 104)\n${error}`);
