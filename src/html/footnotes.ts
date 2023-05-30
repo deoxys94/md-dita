@@ -13,6 +13,8 @@ export const fixFootnotes = (markdown: string, eventLogger: any) =>
     
         markdown = markdown.replace(auxArray[0], auxArray[0].replace(/(\*\*Footnotes:\*\*)/, `## Footnotes: `));
     
+        markdown = markdown.replace(/{: style[\s\S]*?}/g, ``);
+
         eventLogger.logInfo(`Converted footnotes.`);
         return markdown;
     } catch (error) {

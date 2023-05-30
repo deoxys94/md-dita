@@ -88,7 +88,6 @@ export class MdDita
         let topicId: string = '';
         
         markdown = markdown.replace(/([\s\S]+?)(?=\s<\?xml version="1\.0" encoding="utf-8"\?>\s)/, ``); // Remove slugs
-        markdown = markdown.replace(/href="http/g, `format="html" scope="external" href="http`);
 
         // Fix any internal anchors.
         if (type === 1)
@@ -98,7 +97,10 @@ export class MdDita
         if (type === 3)
             topicId = markdown.match(/<task id=\"(.*?)\">/)[0].replace(/<task id=\"/, ``).replace(/">/, ``);
 
-        markdown = markdown.replace(/href="#/g, `href="#${topicId}/`);
+        markdown = markdown.replace(/href="#/g, `href="${topicId}/`);
+        markdown = markdown.replace(/href="http/g, `format="html" scope="external" href="http`);
+        markdown = markdown.replace(/<term><sup>/g, `<sup>`);
+        markdown = markdown.replace(/<\/sup><\/term>/g, `</sup>`)
         markdown = fixAnchorId(markdown, this.eventLogger);
 
 

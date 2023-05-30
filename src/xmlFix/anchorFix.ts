@@ -11,7 +11,9 @@ export const fixAnchorId = (xmlString: string, eventLogger: any): string =>
 
         anchorID = element.match(/\{(#.*?)\}/)[0].replace(`{`, ``).replace(`}`, ``);
         tempReplacement = element.replace(/<title>/, `<title id="${anchorID.replace(`{`, ``).replace(`}`, ``)}">`).replace(/\{(#.*?)\}/, ``);
+        tempReplacement = tempReplacement.replace(`id="#`, `id="`);
 
+        console.log(tempReplacement);
 
         xmlString = xmlString.replace(element, tempReplacement);
     }
