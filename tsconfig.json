@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "CommonJS",
+        "module": "ES2020",
         "target": "ES2017",
         "outDir": "./dist",
         "removeComments": true,

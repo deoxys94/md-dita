@@ -1,9 +1,4 @@
-let cheerio;
-//import * as cheerio from 'cheerio';
-
-const importCheerio = async () => {
-    cheerio = await import('cheerio');
-}
+import * as cheerio from 'cheerio';
 
 export const convertHtmlTables = (xml: string, eventLogger: any): string =>
 {
@@ -22,9 +17,7 @@ export const convertHtmlTables = (xml: string, eventLogger: any): string =>
 }
 
 function htmlToDitaTable(html: string, eventLogger: any): string
-{
-    importCheerio();
-    
+{    
     try
     {
         const $ = cheerio.load(html);
@@ -89,6 +82,7 @@ function htmlToDitaTable(html: string, eventLogger: any): string
     } catch (error)
     {
         eventLogger.logWarning(`Unable to convert HTML table to DITA XML table. Ignoring HTML table. (Error Code: 106)\n${error}`);
+        console.trace();
         return '<table outputclass="frame all rules all"><tgroup cols="0"></tgroup></table>';
     }
 }
