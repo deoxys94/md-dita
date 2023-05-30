@@ -11,7 +11,8 @@ export const fixTask = (xml: string, eventLogger: any) =>
         xml = xml.replace(/<task\s+.*?id=".*?"/, `<task id="${id}"`);
     
         let auxArray = generateSubTasks(xml, eventLogger);
-        let tempReplacement: string;
+
+        let tempReplacement: string = ``;
     
         if (auxArray.length > 0)
         {
@@ -66,7 +67,7 @@ export const fixTask = (xml: string, eventLogger: any) =>
                 xml = xml.replace(element, tempReplacement);
             }
         }
-    
+
         return xml;    
     } catch (error) {
         eventLogger.logError(`Unable to convert document to DITA XML. Please try again. (Error Code: 303)\n${error}`);

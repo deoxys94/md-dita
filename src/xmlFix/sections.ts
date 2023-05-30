@@ -30,7 +30,7 @@ export const fixSections = (xml: string, type: number,  eventLogger: any) =>
 {
     try {
         let auxArray = generateSections(xml, type, eventLogger);
-        let tempReplacement: string;
+        let tempReplacement: string = ``;
     
         if (auxArray.length === 0)
             return (type === 1) ? xml : xml.replace(/<refbody>/, `<refbody>\n<section>`).replace(/<\/refbody>/, `</section>\n</refbody>`);
