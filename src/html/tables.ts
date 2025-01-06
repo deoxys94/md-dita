@@ -109,7 +109,7 @@ function htmlToDitaTable(html: string, eventLogger: any): string
 
         // Add colspecs
         let colCountAux = html.match(/<tr[\s\S]+?<\/tr>/)[0]
-        let colCount = (colCountAux.match(/<th>/g) || []).length;
+        let colCount = (colCountAux.match(/<th>/g) || colCountAux.match(/<td>/g) || []).length;
         //let colCount = $('thead tr th').length || $('thead tr td').length;
         
         ditaTable.push('<tgroup cols="' + colCount + '">');
@@ -129,14 +129,14 @@ function htmlToDitaTable(html: string, eventLogger: any): string
             element = element.replace(/<tr>/g, `<row>`)
             .replace(/<\/tr>/g, `</row>`)
             .replace(/<th>/g, `<entry><p>`)
-            .replace(/<\/th>/g, `</p></entry>`);
+            .replace(/<\/th>/g, `</p></entry>`)
+            .replace(/<td>/g, `<entry><p>`)
+            .replace(/<\/td>/g, `</p></entry>`);
 
             ditaTable.push(element);
         }
 
         ditaTable.push('</thead>');
-
-        console.log(ditaTable)
 
         // Add tbody
         ditaTable.push('<tbody>');

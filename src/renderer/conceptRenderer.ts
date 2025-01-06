@@ -6,7 +6,7 @@ export class ConceptRenderer extends BaseDitaRenderer
     {
         super();
 
-        this.md.renderer.rules.heading_open = (tokens, idx) => tokens[idx].tag === 'h1' ? `<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">\n<concept id="<tbd>">\n<title>` : `<section><title>`;
+        this.md.renderer.rules.heading_open = (tokens, idx) => tokens[idx].tag === 'h1' ? `<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">\n<concept id="<tbd>" xml:lang="en-us">\n<title>` : `<section><title>`;
 
         this.md.renderer.rules.heading_close = (tokens, idx) => tokens[idx].tag === 'h1' ? `</title>\n<conbody>\n` : `</title></section>\n`;
 
