@@ -19,16 +19,16 @@ export const menuCascade = (xml: string, eventLogger: any) =>
                 .replace(/<codeph>/, ``) // And other tags that can break the <term> or <menucascade> elements
                 .replace(/<\/codeph>/, ``);
     
-            if (element.includes(`&gt;`)) // Check if the string has a > symbol.
+            if (element.includes(`&gt;`) || element.includes(`→`)) // Check if the string has a > symbol.
             {
-                let parts = tempReplacement.split('&gt;');
+                let parts = element.includes(`&gt;`) ? tempReplacement.split('&gt;') : element.split(`→`);
                 let wrappedParts = parts.map(part => `<uicontrol>${part}</uicontrol>`);
                 tempReplacement = wrappedParts.join('');
                 tempReplacement = `<menucascade>${tempReplacement}</menucascade>`;
             } 
             else 
             {
-                tempReplacement = `<term>${tempReplacement}</term>`;
+                tempReplacement = `<uicontrol>${tempReplacement}</uicontrol>`;
             }
     
             xml = xml.replace(element, tempReplacement);
