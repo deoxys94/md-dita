@@ -10,7 +10,7 @@ import { TaskRenderer } from "./renderer/taskRenderer";
 import { fixConceptReference } from "./xmlFix/conceptReferenceFix";
 import { fixMenuCascadeElements } from "./xmlFix/fixMenuCascades";
 import { fixTask } from "./xmlFix/taskFix";
-import { fixAnchorId } from "./xmlFix/anchorFix";
+import { fixAnchorIdForTitles } from "./xmlFix/anchorFix";
 import * as cheerio from 'cheerio';
 
 export class simpleLogger
@@ -58,6 +58,14 @@ export class simpleLogger
     message = `[Info] ${message}`;
     console.info(message);
   }
+
+  public logDebug(message: string)
+  {
+    if (!this._verbose) return;
+
+    message = `[Debug] ${message}`;
+    console.debug(message);
+  }
 }
 
 export class MdDita
@@ -76,6 +84,8 @@ export class MdDita
 
   private fixCommonElements(markdown: string)
   {
+    this.eventLogger.logInfo(`Fixing common elements before conversion`);
+
     markdown = markdown.trimStart();
 
     markdown = transformRawHtml(markdown, this.eventLogger);
@@ -187,8 +197,8 @@ export class MdDita
       $term.remove();
     });
 
-    // Apply fixAnchorId (assuming it's a separate function that needs to be called)
-    return fixAnchorId($.html(), this.eventLogger);
+    // Apply fixAnchorIdForTitles (assuming it's a separate function that needs to be called)
+    return fixAnchorIdForTitles($.html(), this.eventLogger);
   }
 
   /**
@@ -243,6 +253,7 @@ export class MdDita
     markdown = this.fixCommonElements(markdown);
 
     markdown = renderer.toDitaReference(markdown, this.eventLogger);
+    this.eventLogger.logDebug(`${markdown}`);
 
     if (markdown === ``) return ``;
 

@@ -26,9 +26,9 @@ export abstract class BaseDitaRenderer
     this.md.renderer.rules.code_inline = (tokens, idx) =>
       `<codeph>${this.md.utils.escapeHtml(tokens[idx].content)}</codeph>`;
 
-    this.md.renderer.rules.strong_open = () => "<checkMenu>";
+    this.md.renderer.rules.strong_open = () => "<strong>";
 
-    this.md.renderer.rules.strong_close = () => "</checkMenu>";
+    this.md.renderer.rules.strong_close = () => "</strong>";
 
     this.md.renderer.rules.em_open = () => "<cite>";
 
