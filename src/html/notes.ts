@@ -1,36 +1,44 @@
-export const convertNotes = (xml: string, eventLogger: any) =>
+import * as cheerio from 'cheerio';
+
+export const convertNotes = (xml: string, eventLogger: any): string =>
 {
-    try {
-        let auxArray = [];
-        let tempReplacement: any;
-    
-        if (!/<p[\s\S]+?<\/p>/g.test(xml))
+    const simpleNotePattern = /\{:?\s?.(note|tip|warning)\s?\}/;
+    try
+    {
+        const $ = cheerio.load(xml, { xml: true });
+
+        $('p, aside').each((_, element) =>
         {
-            eventLogger.logInfo("No notes found");
-            return xml;
-        }
-    
-        auxArray = [...xml.match(/<p[\s\S]+?<\/p>/g)];
-    
-        for (let element of auxArray)
-        {
-            if (!/{[\s\S]+?}/.test(element))
-                continue;
-    
-            if (/.note/.test(element))
-                xml = xml.replace(element, `<note>${element.replace(/{[\s\S]+?}/, ``)}</note>`);
-    
-            if (/.tip/.test(element))
-                xml = xml.replace(element, `<note type="tip">${element.replace(/{[\s\S]+?}/, ``)}</note>`);
-            
-            if (/.warning/.test(element))
-                xml = xml.replace(element, `<note type="warning">${element.replace(/{[\s\S]+?}/, ``)}</note>`);
-        }
-    
-        eventLogger.logInfo(`Converted notes to DITA XML notes.`);
-        return xml;
-    } catch (error) {
+            const $element = $(element);
+            const html = $element.html();
+
+            if (element.tagName === 'p' && html && simpleNotePattern.test(html))
+            {
+                const noteType = html.includes('.note') ? '' : html.includes('.tip') ? 'tip' : 'warning';
+                const cleanedContent = `<p>${html.replace(simpleNotePattern, '')}</p>`;
+                const noteHtml = $('<note></note>').html(cleanedContent);
+
+                if (noteType) noteHtml.attr('type', noteType);
+
+                $element.replaceWith(noteHtml);
+            } else if (element.tagName === 'aside')
+            {
+                $element.find('br').replaceWith('<p/>');
+
+                const typeAttr = $element.attr('type');
+                const noteHtml = $('<note></note>').html(html);
+
+                if (typeAttr !== 'note') noteHtml.attr('type', typeAttr);
+
+                $element.replaceWith(noteHtml);
+            }
+        });
+
+        eventLogger.logInfo('Converted notes to DITA XML notes.');
+        return $.html();
+    } catch (error)
+    {
         eventLogger.logWarning(`Unable to convert notes to DITA. Verify the resulting DITA file afterwards. (Error Code: 105)\n${error}`);
         return xml;
     }
-}
+};

@@ -11,32 +11,39 @@ import { fixConceptReference } from "./xmlFix/conceptReferenceFix";
 import { fixMenuCascadeElements } from "./xmlFix/fixMenuCascades";
 import { fixTask } from "./xmlFix/taskFix";
 import { fixAnchorId } from "./xmlFix/anchorFix";
+import * as cheerio from 'cheerio';
 
-export class simpleLogger {
+export class simpleLogger
+{
   private _logContainer: string[] = [];
   private _verbose = false;
 
 
-  constructor(verbose = false) {
+  constructor(verbose = false)
+  {
     this._verbose = verbose;
   }
 
-  public get logContainer() {
+  public get logContainer()
+  {
     return this._logContainer;
   }
 
-  public set logContainer(newValue: string[]) {
+  public set logContainer(newValue: string[])
+  {
     this._logContainer = newValue;
   }
 
-  public logWarning(message: string) {
+  public logWarning(message: string)
+  {
     message = `[Warning] ${message}`;
     this._logContainer.push(message);
 
     console.warn(message);
   }
 
-  public logError(message: string) {
+  public logError(message: string)
+  {
     message = `[Error] ${message}`;
     this._logContainer.push(message);
 
@@ -44,7 +51,8 @@ export class simpleLogger {
     console.trace();
   }
 
-  public logInfo(message: string) {
+  public logInfo(message: string)
+  {
     if (!this._verbose) return;
 
     message = `[Info] ${message}`;
@@ -52,18 +60,22 @@ export class simpleLogger {
   }
 }
 
-export class MdDita {
+export class MdDita
+{
   private eventLogger: simpleLogger;
 
-  constructor(verbose: boolean) {
+  constructor(verbose: boolean)
+  {
     this.eventLogger = new simpleLogger(verbose);
   }
 
-  public get getLogs() {
+  public get getLogs()
+  {
     return this.eventLogger.logContainer;
   }
 
-  private fixCommonElements(markdown: string) {
+  private fixCommonElements(markdown: string)
+  {
     markdown = markdown.trimStart();
 
     markdown = transformRawHtml(markdown, this.eventLogger);
@@ -74,43 +86,109 @@ export class MdDita {
     return markdown;
   }
 
-  private fixPendingTasks(markdown: string, type: number) {
-    let topicId: string = "";
+  private fixPendingTasks(markdown: string, type: number): string
+  {
+    let topicId = '';
 
-    console.log(`File before last fix: ${markdown}`)
-
+    // First, handle the XML prefix removal (still using regex as it's before XML parsing)
     markdown = markdown.replace(
       /([\s\S]+?)(?=\s<\?xml version="1\.0" encoding="utf-8"\?>\s)/,
-      ``,
+      '',
     ); // Remove slugs
 
-    // Fix any internal anchors.
-    if (type === 1)
-      topicId = markdown
-        .match(/<concept id=\"(.*?)\">/)[0]
-        .replace(/<concept id=\"/, ``)
-        .replace(/">/, ``);
-    if (type === 2)
-      topicId = markdown
-        .match(/<reference id=\"(.*?)\">/)[0]
-        .replace(/<reference id=\"/, ``)
-        .replace(/">/, ``);
-    if (type === 3)
-      topicId = markdown
-        .match(/<task id=\"(.*?)\">/)[0]
-        .replace(/<task id=\"/, ``)
-        .replace(/">/, ``);
+    // Load the content into Cheerio
+    const $ = cheerio.load(markdown, {
+      xml: true,
+    });
 
-    markdown = markdown.replace(/href="#/g, `href="#${topicId}/`);
-    markdown = markdown.replace(
-      /href="http/g,
-      `format="html" scope="external" href="http`,
-    );
-    markdown = markdown.replace(/<term><sup>/g, `<sup>`);
-    markdown = markdown.replace(/<\/sup><\/term>/g, `</sup>`);
-    markdown = fixAnchorId(markdown, this.eventLogger);
+    // Replace <strong> tags with <uicontrol> while preserving content
+    $('strong').replaceWith((_, el) => `<uicontrol>${$(el).html()}</uicontrol>`);
 
-    return markdown;
+    // Convert <a> tags to DITA <xref> tags, preserving href and content
+    $('a').replaceWith((_, el) => `<xref href="${$(el).attr('href')}">${$(el).html()}</xref>`);
+
+    // Remove all leftover br elements
+    $('br').remove();
+
+    // Check all the <p> elements
+    $('p').each((_, el) => {
+      $(el).children('p').each((_, childEl) => {
+        if ($(childEl).html().trim() === '') {
+          $(childEl).remove();
+        }
+      });
+    });
+
+    // Check all the li elements
+    $('li').each((_, el) => {
+      if ($(el).children('p').length > 0) return
+
+      $(el).replaceWith(`<li><p>${$(el).html()}</p></li>`);
+    });
+
+    $('xref').each((_, el) =>
+    {
+      // Check if the elements have the anchor-only class
+      if (!$(el).hasClass('anchor-only'))
+        return;
+
+      // Save the id attribute
+      const id = $(el).attr('id');
+
+      // Find the parent element
+      const parent = $(el).parent();
+      // Add the id attribute to the parent element
+      parent.attr('id', id);
+
+      // Remove the xref element
+      $(el).remove();
+
+    });
+
+
+    // Extract the topicId based on type
+
+    switch (type)
+    {
+      case 1:
+        topicId = $('concept').attr('id') || '';
+        break;
+      case 2:
+        topicId = $('reference').attr('id') || '';
+        break;
+      case 3:
+        topicId = $('task').attr('id') || '';
+        break;
+    }
+
+    // Update internal anchors
+    $('xref[href^="#"]').attr('href', (_, value) =>
+    {
+      const href = value as string;
+
+      if (href.startsWith('#') && !href.startsWith(`#${topicId}/`))
+        return `#${topicId}/${href.substring(1)}`;
+
+      return href;
+    });
+
+    // Update external links
+    $('xref[href^="http"]').attr({
+      format: 'html',
+      scope: 'external',
+    });
+
+    // Fix term and sup tags
+    $('term > sup').each((_, element) =>
+    {
+      const $sup = $(element);
+      const $term = $sup.parent();
+      $sup.insertAfter($term);
+      $term.remove();
+    });
+
+    // Apply fixAnchorId (assuming it's a separate function that needs to be called)
+    return fixAnchorId($.html(), this.eventLogger);
   }
 
   /**
@@ -118,7 +196,8 @@ export class MdDita {
    * @param markdown - The markdown string to be converted.
    * @returns The converted DITA XML string or an empty string if conversion fails.
    */
-  mdToConcept(markdown: string): string {
+  mdToConcept(markdown: string): string
+  {
     // Initialize the log container
     this.eventLogger.logContainer = [];
 
@@ -156,15 +235,14 @@ export class MdDita {
     return markdown;
   }
 
-  mdToReference(markdown: string) {
+  mdToReference(markdown: string)
+  {
     this.eventLogger.logContainer = [];
     const renderer = new ReferenceRenderer();
 
     markdown = this.fixCommonElements(markdown);
 
     markdown = renderer.toDitaReference(markdown, this.eventLogger);
-
-    console.log(`Current MD file: ${markdown}`);
 
     if (markdown === ``) return ``;
 
@@ -187,7 +265,8 @@ export class MdDita {
     return markdown;
   }
 
-  mdToTask(markdown: string) {
+  mdToTask(markdown: string)
+  {
     this.eventLogger.logContainer = [];
     const renderer = new TaskRenderer();
 
@@ -206,8 +285,6 @@ export class MdDita {
 
     // Find all notes and tips.
     markdown = convertNotes(markdown, this.eventLogger);
-
-    console.log(markdown);
 
     markdown = fixTask(markdown, this.eventLogger);
 

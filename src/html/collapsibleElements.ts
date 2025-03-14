@@ -21,6 +21,8 @@
  */
 export const fixCollapsibleElements = (markdown: string, eventLogger: any) => 
 {
+    eventLogger.logInfo(`Finding collapsible elements`);
+
     try 
     {
         // Regex to find collapsible elements in the format: ??? "..."
