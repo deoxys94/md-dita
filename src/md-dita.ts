@@ -253,7 +253,6 @@ export class MdDita
     markdown = this.fixCommonElements(markdown);
 
     markdown = renderer.toDitaReference(markdown, this.eventLogger);
-    this.eventLogger.logDebug(`${markdown}`);
 
     if (markdown === ``) return ``;
 

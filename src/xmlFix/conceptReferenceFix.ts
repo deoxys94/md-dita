@@ -1,22 +1,42 @@
 import { fixSections } from "./sections";
+import * as cheerio from 'cheerio';
 
 export const fixConceptReference = (xml: string, type: number, eventLogger: any) =>
 {
+    eventLogger.logInfo(`Fixing concept/reference elements before conversion`);
     try
     {
+        // Apply fixSections based on type (keeping this unchanged)
         xml = type === 1 ? fixSections(xml, 1, eventLogger) : fixSections(xml, 2, eventLogger);
-        // Step 3: Extract id attribute value from concept tag
-        let id = xml.match(/<title>(.*?)<\/title>/)[0];
-        id = id.replace(`<title>`, ``).replace(`</title>`, ``);
 
-        // Step 4: Modify and insert the id attribute value back into the concept tag
-        id = id.replace(/[^A-Za-z0-9 ]/g, "").replace(/\s+/g, "_");
+        // Load the XML into Cheerio
+        const $ = cheerio.load(xml, {
+            xml: true,
+        });
 
-        xml = type === 1 ? xml.replace(/<concept\s+.*?id=".*?"/, `<concept id="${id}"`) : xml.replace(/<reference\s+.*?id=".*?"/, `<reference id="${id}"`);
+        // Step 3: Extract the first title element's content
+        const titleContent = $('title').first().text();
+
+        // Step 4: Modify and create ID from title
+        const id = titleContent.replace(/[^A-Za-z0-9 ]/g, "").replace(/\s+/g, "_").toLowerCase();
+
+        // Update the ID attribute based on type
+        if (type === 1)
+        {
+            // For concept elements that already have an id attribute
+            $('concept[id]').first().attr('id', id);
+        } else
+        {
+            // For reference elements that already have an id attribute
+            $('reference[id]').first().attr('id', id);
+        }
+
+        // Convert back to XML string
+        const updatedXml = $.html();
 
         eventLogger.logInfo(`Transformed markdown to DITA Concept/Reference.`);
 
-        return xml;
+        return updatedXml;
     } catch (error)
     {
         eventLogger.logError(`Unable to convert document to DITA XML. Please try again. (Error Code: 301)\n${error}`);
