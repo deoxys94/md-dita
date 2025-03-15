@@ -41,6 +41,20 @@ export const fixTask = (xml: string, eventLogger: any) =>
                 $(element).wrapInner('<context></context>');
                 return;
             }
+
+            if ($(element).children('steps').length > 1)
+            {
+                // Iterate over all the steps elements
+                $(element).children('steps:not(:first)').each((_, stepsElement) => {
+                    console.log($(stepsElement).html());
+                    // Replace <steps> with <ul>, preserving content
+                    $(stepsElement).replaceWith('<ol>' + $(stepsElement).html() + '</ol>');
+
+                    // Replace <step> with <li>, preserving content
+                    $('ol').children('step').replaceWith('<li>' + $(stepsElement).children('step').html() + '</li>');
+                });
+            }
+
             // Wrap the contents before <steps> with a <context></context>
             const prevElements = $(element).children('steps').prevAll().toArray().reverse();
 
