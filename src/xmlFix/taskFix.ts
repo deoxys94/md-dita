@@ -1,74 +1,78 @@
-import { generateSubTasks } from "./subtasks";
+import { fixSubtasks } from "./subtasks";
+import * as cheerio from 'cheerio';
+
+const fixClutteredCmd = ($cmd: any) => 
+{
+    // Find any p, ul, or ol elements that are direct children of cmd
+    const $elementsToMove = $cmd.children('p, ul, ol');
+
+    // If we found any elements to move
+    if ($elementsToMove.length > 0) 
+        $cmd.after($elementsToMove); // Move them after the cmd element
+}
 
 export const fixTask = (xml: string, eventLogger: any) =>
 {
+    eventLogger.logInfo(`Fixing task elements`);
     try 
     {
-        let id = xml.match(/<title>(.*?)<\/title>/)[0];
+        xml = fixSubtasks(xml, eventLogger);
 
-        id = id.replace(`<title>`, ``).replace(`</title>`, ``);
-        id = id.replace(/[^A-Za-z0-9 ]/g, "").replace(/\s+/g, "_"); // Step 4: Modify and insert the id attribute value back into the task tag
-        xml = xml.replace(/<task\s+.*?id=".*?"/, `<task id="${id}"`);
-    
-        let auxArray = generateSubTasks(xml, eventLogger);
+        // Load the XML into Cheerio
+        const $ = cheerio.load(xml, {
+            xml: true,
+        });
 
-        let tempReplacement: string = ``;
+        // Step 3: Extract the first title element's content
+        const titleContent = $('title').first().text();
+
+        // Step 4: Modify and create ID from title
+        const id = titleContent.replace(/[^A-Za-z0-9 ]/g, "").replace(/\s+/g, "_").toLowerCase();
     
-        if (auxArray.length > 0)
-        {
-            let i = 1;
-            for (let element of auxArray)
+        // Replace the id of the <concept> element
+        $('task[id]').first().attr('id', id);
+
+        // Select all the taskboody elements
+        $('taskbody').each((_, element) =>{
+            // Check if there is a child <steps> in the element
+            if ($(element).children('steps').length === 0)
             {
-                xml = xml.replace(element, ``);
-                tempReplacement = tempReplacement + `<task id="sub_task_${i}">\n${element.replace(/<\/title>/, `</title>\n<taskbody>`)}\n</taskbody>\n</task>\n`;
-                i++;
+                // If not, wrap the contents of the element with <context></context>
+                $(element).wrapInner('<context></context>');
+                return;
             }
-    
-            xml = xml.replace(`</taskbody>`, `</taskbody>\n${tempReplacement}`);
-        }
-    
-        // Add missing context and postreq elements to each taskbody
-        auxArray = [...xml.match(/(<taskbody>)([\s\S]*?)(<\/taskbody>)/g)];
-    
-        for (let element of auxArray)
-        {
-            if (!/<steps>/.test(element))
-            { // Verify if there are any <Steps> elements
-                tempReplacement = element.replace(/<taskbody>/, `<taskbody>\n<context>`)
-                    .replace(/<\/taskbody>/, `</context>\n</taskbody>`); // If not, only add <context> tags
-                xml = xml.replace(element, tempReplacement);
-                continue;
-            }
-    
-            tempReplacement = element.replace(/<taskbody>/, `<taskbody>\n<context>`) // Add context
-                .replace(/<steps>/, `</context>\n<steps>\n`)
-                .replace(/<\/steps>/, `</steps>\n<postreq>\n`) // Add postreq
-                .replace(/<\/taskbody>/, `</postreq>\n</taskbody>`);
-            xml = xml.replace(element, tempReplacement);
-        }
-    
-        if (/(<step>)([\s\S]*?)(<\/step>)/g.test(xml))
-        {
-            auxArray = [...xml.match(/(<step>)([\s\S]*?)(<\/step>)/g)];
-    
-            for (let element of auxArray)
-            {
-                if (/<p>/.test(element))
-                {
-                    tempReplacement = element.replace(/<p>/, `<cmd>`)
-                        .replace(/<\/p>/, `</cmd>`);
-                    tempReplacement = tempReplacement.replace(/<\/cmd>/, `</cmd>\n<info>\n`)
-                        .replace(/<\/step>/, `\n</info>\n<\/step>\n`)
-                } else
-                {
-                    tempReplacement = element.replace(/<step>/, `<step>\n<cmd>`)
-                        .replace(/<\/step>/, `</cmd>\n</step>`);
-                }
-                xml = xml.replace(element, tempReplacement);
-            }
-        }
+            // Wrap the contents before <steps> with a <context></context>
+            const prevElements = $(element).children('steps').prevAll().toArray().reverse();
 
-        return xml;    
+            if (prevElements.length > 0) {
+                $(prevElements).wrapAll('<context></context>');
+            }
+
+            $(element).children('steps').nextAll().wrapAll('<result></result>'); // Wrap the contents after <steps> with a <postreq></postreq>
+
+            // Select the child steps element
+            $(element).children('steps').each((_, stepsElement) => {
+                // Select all the step elements
+                $(stepsElement).children('step').each((_, stepElement) => {
+                    switch($(stepElement).children('p').length)
+                    {
+                        case 0:
+                            $(stepElement).wrapInner('<cmd></cmd>'); // If there are none, wrap the contents of the step element with a <cmd> element
+                        default:
+                            // Replace the first <p> element with a <cmd> element preserving the contents
+                            $(stepElement).children('p').replaceWith((_, pElement) => `<cmd>${$(pElement).html()}</cmd>`);
+                    }
+                    
+                    fixClutteredCmd($(stepElement).children('cmd')); // Check if there are any p, ul, or ol elements that are direct children of cmd
+
+                    // Wrap the contents after the <cmd> element with a <info> element
+                    $(stepElement).children('cmd').nextAll().wrapAll('<info></info>');
+                });
+            });
+
+        });
+
+        return $.html();    
     } catch (error) {
         eventLogger.logError(`Unable to convert document to DITA XML. Please try again. (Error Code: 303)\n${error}`);
         return ``;

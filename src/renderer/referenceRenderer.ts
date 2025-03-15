@@ -6,7 +6,7 @@ export class ReferenceRenderer extends BaseDitaRenderer
     {
         super();
 
-        this.md.renderer.rules.heading_open = (tokens, idx) => tokens[idx].tag === 'h1' ? `<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">\n<reference id="<tbd>" xml:lang="en-us">\n<title>` : `<section>\n<title>`;
+        this.md.renderer.rules.heading_open = (tokens, idx) => tokens[idx].tag === 'h1' ? `<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE reference PUBLIC "-//OASIS//DTD DITA Reference//EN" "reference.dtd">\n<reference id="topic-id-placeholder" xml:lang="en-us">\n<title>` : `<section>\n<title>`;
 
         this.md.renderer.rules.heading_close = (tokens, idx) => tokens[idx].tag === 'h1' ? `</title>\n<refbody>\n` : `</title>\n</section>\n`;
 

@@ -3,7 +3,7 @@ import * as cheerio from 'cheerio';
 
 export const fixConceptReference = (xml: string, type: number, eventLogger: any) =>
 {
-    eventLogger.logInfo(`Fixing concept/reference elements before conversion`);
+    eventLogger.logInfo(`Fixing concept/reference elements`);
     try
     {
         // Apply fixSections based on type (keeping this unchanged)
@@ -31,12 +31,9 @@ export const fixConceptReference = (xml: string, type: number, eventLogger: any)
             $('reference[id]').first().attr('id', id);
         }
 
-        // Convert back to XML string
-        const updatedXml = $.html();
-
         eventLogger.logInfo(`Transformed markdown to DITA Concept/Reference.`);
 
-        return updatedXml;
+        return $.html();
     } catch (error)
     {
         eventLogger.logError(`Unable to convert document to DITA XML. Please try again. (Error Code: 301)\n${error}`);

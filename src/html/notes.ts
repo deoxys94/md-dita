@@ -5,7 +5,7 @@ export const convertNotes = (xml: string, eventLogger: any): string =>
     const simpleNotePattern = /\{:?\s?.(note|tip|warning)\s?\}/;
     try
     {
-        const $ = cheerio.load(xml, { xml: true });
+        const $ = cheerio.load(xml, { xml: { decodeEntities: false } });
 
         $('p, aside').each((_, element) =>
         {

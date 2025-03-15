@@ -11,7 +11,7 @@ import { simpleLogger } from '../md-dita';
 export const convertHtmlTables = (xml: string, eventLogger: simpleLogger): string =>
 {
     // Load the entire XML into Cheerio for table detection
-    const $xml = cheerio.load(xml, { xmlMode: true });
+    const $xml = cheerio.load(xml, { xml: { decodeEntities: false } });
     const tables = $xml('table');
     // Regular expressions
     const hardLineBreak: RegExp = /\<br\s?\/?\>/g;
