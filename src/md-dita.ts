@@ -98,19 +98,25 @@ export class MdDita
 
   private fixPendingTasks(markdown: string, type: number): string
   {
+    this.eventLogger.logInfo(`Fixing pending tasks before finising conversion`);
     let topicId = '';
 
-    // First, handle the XML prefix removal (still using regex as it's before XML parsing)
-    markdown = markdown.replace(
-      /([\s\S]+?)(?=\s<\?xml version="1\.0" encoding="utf-8"\?>\s)/,
-      '',
-    ); // Remove slugs
+    this.eventLogger.logInfo("Removing unnecessary XML declarations");
+    // Remove anything before the first XML declaration
 
+    const xmlDeclaration = '<?xml version="1.0" encoding="utf-8"?>';
+    const index = markdown.indexOf(xmlDeclaration);
+    if (index > -1) {
+      markdown = markdown.substring(index);
+    }
+
+    this.eventLogger.logInfo("Loading content into Cheerio");
     // Load the content into Cheerio
     const $ = cheerio.load(markdown, {
       xml: true,
     });
 
+    this.eventLogger.logInfo("Transforming leftover HTML tags");
     // Replace <strong> tags with <uicontrol> while preserving content
     $('strong').replaceWith((_, el) => `<uicontrol>${$(el).html()}</uicontrol>`);
 
@@ -123,7 +129,7 @@ export class MdDita
     // Check all the <p> elements
     $('p').each((_, el) => {
       $(el).children('p').each((_, childEl) => {
-        if ($(childEl).html().trim() === '') {
+        if ($(childEl).html()?.trim() === '') {
           $(childEl).remove();
         }
       });
@@ -206,7 +212,7 @@ export class MdDita
    * @param markdown - The markdown string to be converted.
    * @returns The converted DITA XML string or an empty string if conversion fails.
    */
-  mdToConcept(markdown: string): string
+  mdToConcept(markdown: string): Promise<string>
   {
     // Initialize the log container
     this.eventLogger.logContainer = [];
@@ -221,7 +227,7 @@ export class MdDita
     markdown = renderer.toDitaConcept(markdown, this.eventLogger);
 
     // Return an empty string if conversion failed
-    if (markdown === ``) return ``;
+    if (markdown === ``) return Promise.resolve(``);
 
     // Convert menu paths to <menucascade> or term
     markdown = fixMenuCascadeElements(markdown, this.eventLogger);
@@ -236,16 +242,16 @@ export class MdDita
     markdown = fixConceptReference(markdown, 1, this.eventLogger);
 
     // Return an empty string if fixing references failed
-    if (markdown === ``) return ``;
+    if (markdown === ``) return Promise.resolve(``);
 
     // Fix pending tasks and internal anchors
     markdown = this.fixPendingTasks(markdown, 1);
 
     // Return the final converted markdown
-    return markdown;
+    return Promise.resolve(markdown);
   }
 
-  mdToReference(markdown: string)
+  mdToReference(markdown: string): Promise<string>
   {
     this.eventLogger.logContainer = [];
     const renderer = new ReferenceRenderer();
@@ -254,7 +260,7 @@ export class MdDita
 
     markdown = renderer.toDitaReference(markdown, this.eventLogger);
 
-    if (markdown === ``) return ``;
+    if (markdown === ``) return Promise.resolve(``);
 
     // Find all menu paths and convert them to <menucascade> or term
     markdown = fixMenuCascadeElements(markdown, this.eventLogger);
@@ -268,14 +274,14 @@ export class MdDita
 
     markdown = fixConceptReference(markdown, 2, this.eventLogger);
 
-    if (markdown === ``) return ``;
+    if (markdown === ``) return Promise.resolve(``);
 
     markdown = this.fixPendingTasks(markdown, 2);
 
-    return markdown;
+    return Promise.resolve(markdown);
   }
 
-  mdToTask(markdown: string)
+  mdToTask(markdown: string): Promise<string>
   {
     this.eventLogger.logContainer = [];
     const renderer = new TaskRenderer();
@@ -284,7 +290,7 @@ export class MdDita
 
     markdown = renderer.toDitaTask(markdown, this.eventLogger);
 
-    if (markdown === ``) return ``;
+    if (markdown === ``) return Promise.resolve(``);
 
     // Find all menu paths and convert them to <menucascade> or term
     markdown = fixMenuCascadeElements(markdown, this.eventLogger);
@@ -298,10 +304,10 @@ export class MdDita
 
     markdown = fixTask(markdown, this.eventLogger);
 
-    if (markdown === ``) return ``;
+    if (markdown === ``) return Promise.resolve(``);
 
     markdown = this.fixPendingTasks(markdown, 3);
 
-    return markdown;
+    return Promise.resolve(markdown);
   }
 }
