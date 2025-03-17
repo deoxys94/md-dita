@@ -18,6 +18,9 @@ export const fixTask = (xml: string, eventLogger: any) =>
     {
         xml = fixSubtasks(xml, eventLogger);
 
+        if (xml === ``)
+            return ``;
+
         // Load the XML into Cheerio
         const $ = cheerio.load(xml, {
             xml: true,

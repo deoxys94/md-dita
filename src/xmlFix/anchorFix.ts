@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 
 export const fixAnchorIdForTitles = (xml: string, eventLogger: any): string =>
 {
+    eventLogger.logInfo(`Fixing anchor IDs for titles`);
     // Regular expression to match text enclosed by curly braces
     // and preceded by a hash symbol (e.g. {#anchor-id}).
     const anchorIdPattern: RegExp = /\{(#.*?)\}/;

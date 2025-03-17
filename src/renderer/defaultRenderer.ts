@@ -37,8 +37,8 @@ export abstract class BaseDitaRenderer
     this.md.renderer.rules.link_open = (tokens, idx) =>
     {
       const hrefIndex = tokens[idx].attrIndex("href");
-      const hrefAttr = tokens[idx].attrs[hrefIndex];
-      const hrefValue = hrefAttr[1];
+      const hrefAttr = tokens[idx].attrs?.[hrefIndex];
+      const hrefValue = hrefAttr?.[1];
       return `<xref href="${hrefValue}">`;
     };
 
@@ -47,11 +47,11 @@ export abstract class BaseDitaRenderer
     this.md.renderer.rules.image = (tokens, idx) =>
     {
       const srcIndex = tokens[idx].attrIndex("src");
-      const srcAttr = tokens[idx].attrs[srcIndex];
-      const srcValue = srcAttr[1];
+      const srcAttr = tokens[idx].attrs?.[srcIndex];
+      const srcValue = srcAttr?.[1];
       const altIndex = tokens[idx].attrIndex("alt");
-      const altAttr = tokens[idx].attrs[altIndex];
-      const altValue = altAttr[1];
+      const altAttr = tokens[idx].attrs?.[altIndex];
+      const altValue = altAttr?.[1];
 
       return `<image placement="break" href="${srcValue}" alt="${altValue}"/>`;
     };

@@ -34,14 +34,14 @@ const generateSections = (xml: string, type: number,  eventLogger: any): string[
     const lastSectionPattern: RegExp = /(<section>)[\s\S]*/;
 
     let sections: string[] = [];
-    let topicBody = type === 1 ? xml.match(conbodyPattern)[0] : xml.match(refbodyPattern)[0]; // Get all the content inside the conbody/refbody element
+    let topicBody = type === 1 ? xml.match(conbodyPattern)![0] : xml.match(refbodyPattern)![0]; // Get all the content inside the conbody/refbody element
 
     // Get rid of both the opening and closing tag
     topicBody = type === 1 ? topicBody.replace("<conbody>", ``) : topicBody.replace("<refbody>", ``);
     topicBody = type === 1 ? topicBody.replace("<\/conbody>", ``) : topicBody.replace("<\/refbody>", ``); 
 
     // Check if there are any sections
-    if (!topicBody.includes("<section>")) 
+    if (!topicBody)
     { // If there are no sections, return
         eventLogger.logInfo(`No sections detected.`);
         return [];
@@ -51,14 +51,14 @@ const generateSections = (xml: string, type: number,  eventLogger: any): string[
     if (sectionPattern.test(topicBody)) 
     {
         // Grab everything between two opening section tags
-        sections = topicBody.match(sectionPattern);
+        sections = topicBody.match(sectionPattern)!;
 
         for (let element of sections)
             topicBody = topicBody.replace(element, ``); // Remove the contents from the actual XML object
     }
 
     // The last section always remains by itself. Grab it as well
-    sections.push(topicBody.match(lastSectionPattern)[0]); 
+    sections.push(topicBody.match(lastSectionPattern)![0]); 
 
     eventLogger.logInfo(`Sections generated.`);
     return sections;
@@ -68,7 +68,7 @@ const generateSections = (xml: string, type: number,  eventLogger: any): string[
  * Fixes the sections based on the information from the generateSections function.
  * After getting the "raw" sections, this function will clean them up and put them in the correct place
  */
-export const fixSections = (xml: string, type: number,  eventLogger: any) => 
+export const fixSections = (xml: string, type: number,  eventLogger: any): string => 
 {
     const refbodyPattern: RegExp = /<refbody>\n<section>/;
     try 
@@ -95,7 +95,7 @@ export const fixSections = (xml: string, type: number,  eventLogger: any) =>
 
         return xml;
     } catch (error) {
-        eventLogger.logError(`Unable to generate sections`);
-        return;
+        eventLogger.logError(`Unable to generate sections. ${error}`);
+        return "";
     }
 };

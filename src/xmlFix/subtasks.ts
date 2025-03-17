@@ -4,7 +4,7 @@ const generateSubTasks = (xml: string, eventLogger: any): string[] =>
     const subtaskPattern: RegExp = /(<title>)([\s\S]*?)(?=<title>)/g
     const finalSubtaskPattern: RegExp = /(<title>)[\s\S]*/;
 
-    let taskBody = xml.match(taskBodyPattern)[0]; // Get all the content inside the taskbody element
+    let taskBody = xml.match(taskBodyPattern)![0]; // Get all the content inside the taskbody element
     let subTasks: string[] = [];
 
     taskBody = taskBody.replace("<taskbody>", ``); // Delete the taskbody tags
@@ -18,13 +18,13 @@ const generateSubTasks = (xml: string, eventLogger: any): string[] =>
 
     if (subtaskPattern.test(taskBody)) 
     { // Verify if there are more than 1 subtasks
-        subTasks = taskBody.match(subtaskPattern); // Get all subtasks
+        subTasks = taskBody.match(subtaskPattern)!; // Get all subtasks
 
         for (let element of subTasks)
             taskBody = taskBody.replace(element, ``); // Remove them from taskbody
     }
 
-    subTasks.push(taskBody.match(finalSubtaskPattern)[0]); // Grab the "lonely" subtask
+    subTasks.push(taskBody.match(finalSubtaskPattern)![0]); // Grab the "lonely" subtask
 
     eventLogger.logInfo(`Subtasks generated.`);
     return subTasks;
@@ -32,27 +32,34 @@ const generateSubTasks = (xml: string, eventLogger: any): string[] =>
 
 export const fixSubtasks = (xml: string, eventLogger: any): string => 
 {
-    eventLogger.logInfo(`Fixing subtasks`);
-    let subtaskArray = generateSubTasks(xml, eventLogger);
-    let tempReplacement: string = ``;
-    let i = 1;
-
-    if (subtaskArray.length === 0)
-        return xml;
-
-    for (let element of subtaskArray)
+    try
     {
-        xml = xml.replace(element, ``); // Remove original element
-        tempReplacement = tempReplacement + `
+        eventLogger.logInfo(`Fixing subtasks`);
+        let subtaskArray = generateSubTasks(xml, eventLogger);
+        let tempReplacement: string = ``;
+        let i = 1;
+
+        if (subtaskArray.length === 0)
+            return xml;
+
+        for (let element of subtaskArray)
+        {
+            xml = xml.replace(element, ``); // Remove original element
+            tempReplacement = tempReplacement + `
 <task id="sub_task_${i}">
 ${element.replace("<\/title>", `</title>
 <taskbody>`)}
 </taskbody>
 </task>`;
-        i++;
+            i++;
+        }
+
+        xml = xml.replace(`</taskbody>`, `</taskbody>\n${tempReplacement}`);
+
+        return xml;
+    } catch (error)
+    {
+        eventLogger.logError(`Unable to fix subtasks. (Error code: 204)\n${error}`);
+        return ``;
     }
-
-    xml = xml.replace(`</taskbody>`, `</taskbody>\n${tempReplacement}`);
-
-    return xml;
 }

@@ -26,7 +26,7 @@ export const convertNotes = (xml: string, eventLogger: any): string =>
                 $element.find('br').replaceWith('<p/>');
 
                 const typeAttr = $element.attr('type');
-                const noteHtml = $('<note></note>').html(html);
+                const noteHtml = $('<note></note>').html(html!);
 
                 if (typeAttr !== 'note') noteHtml.attr('type', typeAttr);
 

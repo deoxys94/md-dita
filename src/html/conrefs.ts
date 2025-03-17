@@ -26,7 +26,7 @@ export const findConrefs = (markdown: string, eventLogger: simpleLogger): string
 
         let tempReplacement: string;
         // Extract all conrefs from the markdown
-        let auxArray = [...markdown.match(regexConref)];
+        let auxArray = [...markdown.match(regexConref)!];
 
         // Replace each conref with a draft comment
         for (let element of auxArray)

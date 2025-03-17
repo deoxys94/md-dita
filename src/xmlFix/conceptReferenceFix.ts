@@ -9,6 +9,9 @@ export const fixConceptReference = (xml: string, type: number, eventLogger: any)
         // Apply fixSections based on type (keeping this unchanged)
         xml = type === 1 ? fixSections(xml, 1, eventLogger) : fixSections(xml, 2, eventLogger);
 
+        if (xml === ``)
+            return ``;
+
         // Load the XML into Cheerio
         const $ = cheerio.load(xml, {
             xml: true,
