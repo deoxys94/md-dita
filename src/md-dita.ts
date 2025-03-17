@@ -88,10 +88,10 @@ export class MdDita
 
     markdown = markdown.trimStart();
 
-    markdown = transformRawHtml(markdown, this.eventLogger);
-    markdown = findConrefs(markdown, this.eventLogger);
     markdown = fixCollapsibleElements(markdown, this.eventLogger);
     markdown = fixFootnotes(markdown, this.eventLogger);
+    markdown = findConrefs(markdown, this.eventLogger);
+    markdown = transformRawHtml(markdown, this.eventLogger);
 
     return markdown;
   }

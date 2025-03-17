@@ -11,12 +11,11 @@ import { simpleLogger } from "../md-dita";
 export const findConrefs = (markdown: string, eventLogger: simpleLogger): string =>
 {
     eventLogger.logInfo(`Finding and replacing content re-use directives`);
-
     try
     {
         // Regular expression to find content reuse directives in the markdown
         const regexConref = /--8<--\s"(.*?)"/g;
-
+        const styleConref = /\{\:\s*style=\"[^\"]*\"\s*\}/g
         // Check if the markdown contains any content reuse directives
         if (!regexConref.test(markdown))
         {
@@ -34,6 +33,9 @@ export const findConrefs = (markdown: string, eventLogger: simpleLogger): string
             tempReplacement = element.replace(/--8<--\s/, ``);
             markdown = markdown.replace(element, `<draft-comment>Import the contents of ${tempReplacement} here.</draft-comment>\n`);
         }
+
+        // Remove the style attribute from the markdown
+        markdown = markdown.replace(styleConref, ``);
 
         eventLogger.logInfo(`Replaced all conrefs.`);
         return markdown;
