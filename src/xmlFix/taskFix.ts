@@ -49,7 +49,6 @@ export const fixTask = (xml: string, eventLogger: any) =>
             {
                 // Iterate over all the steps elements
                 $(element).children('steps:not(:first)').each((_, stepsElement) => {
-                    console.log($(stepsElement).html());
                     // Replace <steps> with <ul>, preserving content
                     $(stepsElement).replaceWith('<ol>' + $(stepsElement).html() + '</ol>');
 
@@ -71,15 +70,11 @@ export const fixTask = (xml: string, eventLogger: any) =>
             $(element).children('steps').each((_, stepsElement) => {
                 // Select all the step elements
                 $(stepsElement).children('step').each((_, stepElement) => {
-                    switch($(stepElement).children('p').length)
-                    {
-                        case 0:
-                            $(stepElement).wrapInner('<cmd></cmd>'); // If there are none, wrap the contents of the step element with a <cmd> element
-                        default:
-                            // Replace the first <p> element with a <cmd> element preserving the contents
-                            $(stepElement).children('p').replaceWith((_, pElement) => `<cmd>${$(pElement).html()}</cmd>`);
-                    }
-                    
+                    if ($(stepElement).children('p').length === 0)
+                        $(stepElement).wrapInner('<cmd></cmd>'); // If there are none, wrap the contents of the step element with a <cmd> element
+                    else
+                        $(stepElement).children('p').replaceWith((_, pElement) => `<cmd>${$(pElement).html()}</cmd>`); // Replace the first <p> element with a <cmd> element preserving the contents
+
                     fixClutteredCmd($(stepElement).children('cmd')); // Check if there are any p, ul, or ol elements that are direct children of cmd
 
                     // Wrap the contents after the <cmd> element with a <info> element

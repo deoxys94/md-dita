@@ -37,11 +37,10 @@ const generateSections = (xml: string, type: number,  eventLogger: any): string[
     let topicBody = type === 1 ? xml.match(conbodyPattern)![0] : xml.match(refbodyPattern)![0]; // Get all the content inside the conbody/refbody element
 
     // Get rid of both the opening and closing tag
-    topicBody = type === 1 ? topicBody.replace("<conbody>", ``) : topicBody.replace("<refbody>", ``);
-    topicBody = type === 1 ? topicBody.replace("<\/conbody>", ``) : topicBody.replace("<\/refbody>", ``); 
+    topicBody = type === 1 ? topicBody.replace("<conbody>", ``).replace("<\/conbody>", ``) : topicBody.replace("<refbody>", ``).replace("<\/refbody>", ``);
 
     // Check if there are any sections
-    if (!topicBody)
+    if (!topicBody.includes("<section>"))
     { // If there are no sections, return
         eventLogger.logInfo(`No sections detected.`);
         return [];
