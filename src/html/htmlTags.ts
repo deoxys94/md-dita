@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import { simpleLogger } from "../md-dita";
+import { encode }   from "html-entities";
 
 /**
  * Deletes unnecessary HTML tags and transforms certain raw HTML elements to
@@ -22,7 +23,7 @@ export const transformRawHtml = (markdown: string, eventLogger: simpleLogger) =>
 
     // Define transformations as an array of objects
     const transformations = [
-      { selector: ".code", replacement: (content: string) => `<codeblock>${content}</codeblock>` },
+      { selector: ".code", replacement: (content: string) => `<codeblock>${encode(content)}</codeblock>` },
       { selector: ".note", replacement: (content: string) => `<aside type="note">${content}</aside>` },
       { selector: ".tip", replacement: (content: string) => `<aside type="tip">${content}</aside>` },
       { selector: ".warning", replacement: (content: string) => `<aside type="warning">${content}</aside>` },
@@ -30,8 +31,8 @@ export const transformRawHtml = (markdown: string, eventLogger: simpleLogger) =>
       { selector: "[href]", replacement: (content: string, el: any) => `<xref href="${$(el).attr("href")}">${content}</xref>` },
       { selector: "a[name]", replacement: (_: string, el: any) => `<xref class="anchor-only" id="${$(el).attr("name")}"></xref>` },
       { selector: "em", replacement: (content: string) => `<cite>${content}</cite>` },
-      { selector: "code", replacement: (content: string) => `<codeph>${content}</codeph>` },
-      { selector: "pre", replacement: (content: string) => `<codeblock>${content}</codeblock>` }
+      { selector: "code", replacement: (content: string) => `<codeph>${encode(content)}</codeph>` },
+      { selector: "pre", replacement: (content: string) => `<codeblock>${encode(content)}</codeblock>` }
     ];
 
     // Apply transformations
@@ -54,6 +55,7 @@ export const transformRawHtml = (markdown: string, eventLogger: simpleLogger) =>
     eventLogger.logWarning(
       `Unable to delete unnecessary HTML tags. Verify the resulting DITA file afterwards. (Error Code: 104)\n${error}`
     );
+
     return markdown;
   }
 };

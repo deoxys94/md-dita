@@ -3,6 +3,7 @@
         "@types/markdown-it": "^14.1.2",
         "@xmldom/xmldom": "^0.9.8",
         "cheerio": "^1.0.0",
+        "html-entities": "^2.5.2",
         "markdown-it": "^14.1.0"
     },
     "devDependencies": {

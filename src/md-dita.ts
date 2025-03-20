@@ -222,7 +222,7 @@ export class MdDita
 
     // Fix common elements in the markdown
     markdown = this.fixCommonElements(markdown);
-
+    
     // Convert the pre-treated markdown to DITA Concept format
     markdown = renderer.toDitaConcept(markdown, this.eventLogger);
 

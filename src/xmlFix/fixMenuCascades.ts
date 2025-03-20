@@ -3,20 +3,20 @@ import { simpleLogger } from "../md-dita";
 
 /**
  * Converts menu cascade elements in an XML string by processing strong elements using Cheerio.
- * 
+ *
  * @param xml - The input XML string to be processed
  * @param eventLogger - A simple logger for recording information and errors during processing
  * @returns The modified XML string with menu paths converted
- * 
+ *
  * @remarks
  * This function performs the following operations:
  * - Uses Cheerio to parse the XML and select strong elements
  * - Processes each strong element to identify menu paths
  * - Handles menu paths containing '>' or '→' symbols
  * - Wraps menu path elements appropriately
- * 
+ *
  * @throws {Error} Catches and logs any errors during XML processing
- * 
+ *
  * @example
  * ```typescript
  * const inputXml = '<strong>File > New > Project</strong>';
