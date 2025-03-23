@@ -13,32 +13,24 @@ export const findConrefs = (markdown: string, eventLogger: simpleLogger): string
     eventLogger.logInfo(`Finding and replacing content re-use directives`);
     try
     {
-        // Regular expression to find content reuse directives in the markdown
-        const regexConref = /--8<--\s"(.*?)"/g;
-        const styleConref = /\{\:\s*style=\"[^\"]*\"\s*\}/g
         // Check if the markdown contains any content reuse directives
-        if (!regexConref.test(markdown))
+        if (!markdown.includes(`--8<--`))
         {
             eventLogger.logInfo(`No conrefs detected.`);
             return markdown;
         }
 
-        let tempReplacement: string;
-        // Extract all conrefs from the markdown
-        let auxArray = [...markdown.match(regexConref)!];
+        let updatedString: string = "";
+        let lines = markdown.split("\n");
 
         // Replace each conref with a draft comment
-        for (let element of auxArray)
+        for (let element of lines)
         {
-            tempReplacement = element.replace(/--8<--\s/, ``);
-            markdown = markdown.replace(element, `<draft-comment>Import the contents of ${tempReplacement} here.</draft-comment>\n`);
+            updatedString = element.includes("--8<--") ? updatedString + element.replace("--8<--", `<draft-comment>Import the contents of `).replace(`.md"`, `.md" here.</draft-comment>\n`) : updatedString + element + "\n";
         }
 
-        // Remove the style attribute from the markdown
-        markdown = markdown.replace(styleConref, ``);
-
         eventLogger.logInfo(`Replaced all conrefs.`);
-        return markdown;
+        return updatedString;
     } catch (error)
     {
         // Log a warning if an error occurs during the replacement process

@@ -1,7 +1,3 @@
-import { fixCollapsibleElements } from "./html/collapsibleElements";
-import { findConrefs } from "./html/conrefs";
-import { fixFootnotes } from "./html/footnotes";
-import { transformRawHtml } from "./html/htmlTags";
 import { convertNotes } from "./html/notes";
 import { convertHtmlTables } from "./html/tables";
 import { ConceptRenderer } from "./renderer/conceptRenderer";
@@ -12,6 +8,7 @@ import { fixMenuCascadeElements } from "./xmlFix/fixMenuCascades";
 import { fixTask } from "./xmlFix/taskFix";
 import { fixAnchorIdForTitles } from "./xmlFix/anchorFix";
 import * as cheerio from 'cheerio';
+import { fixCommonElements } from "./preliminaryFixes/preliminaryFixes";
 
 export class simpleLogger
 {
@@ -80,20 +77,6 @@ export class MdDita
   public get getLogs()
   {
     return this.eventLogger.logContainer;
-  }
-
-  private fixCommonElements(markdown: string)
-  {
-    this.eventLogger.logInfo(`Fixing common elements before conversion`);
-
-    markdown = markdown.trimStart();
-
-    markdown = fixCollapsibleElements(markdown, this.eventLogger);
-    markdown = fixFootnotes(markdown, this.eventLogger);
-    markdown = findConrefs(markdown, this.eventLogger);
-    markdown = transformRawHtml(markdown, this.eventLogger);
-
-    return markdown;
   }
 
   private fixPendingTasks(markdown: string, type: number): string
@@ -221,8 +204,8 @@ export class MdDita
     const renderer = new ConceptRenderer();
 
     // Fix common elements in the markdown
-    markdown = this.fixCommonElements(markdown);
-    
+    markdown = fixCommonElements(markdown, this.eventLogger);
+
     // Convert the pre-treated markdown to DITA Concept format
     markdown = renderer.toDitaConcept(markdown, this.eventLogger);
 
@@ -256,7 +239,7 @@ export class MdDita
     this.eventLogger.logContainer = [];
     const renderer = new ReferenceRenderer();
 
-    markdown = this.fixCommonElements(markdown);
+    markdown = fixCommonElements(markdown, this.eventLogger);
 
     markdown = renderer.toDitaReference(markdown, this.eventLogger);
 
@@ -286,7 +269,7 @@ export class MdDita
     this.eventLogger.logContainer = [];
     const renderer = new TaskRenderer();
 
-    markdown = this.fixCommonElements(markdown);
+    markdown = fixCommonElements(markdown, this.eventLogger);
 
     markdown = renderer.toDitaTask(markdown, this.eventLogger);
 

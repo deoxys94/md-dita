@@ -1,3 +1,5 @@
+import { simpleLogger } from "../md-dita";
+
 /**
  * Transforms collapsible elements in markdown by converting special syntax to markdown headers
  *
@@ -7,8 +9,8 @@
  *
  * @remarks
  * This function does the following:
- * 1. Detects collapsible elements using a specific regex pattern (??? "...)
- * 2. Trims whitespace and indentation from all lines
+ * 1. Finds the pattern of collapsible elements ('??? "Section title"')
+ * 2. Trims whitespace and indentation from all lines under the section title
  * 3. Converts collapsible elements to markdown headers (##)
  * 4. Handles special cases with bold formatting
  *
@@ -19,20 +21,14 @@
  * // Returns: '## Section Title'
  * ```
  */
-export const fixCollapsibleElements = (
-  markdown: string,
-  eventLogger: any,
-): string =>
+export const fixCollapsibleElements = (markdown: string, eventLogger: simpleLogger): string =>
 {
   eventLogger.logInfo(`Finding collapsible elements`);
 
   try
   {
-    // Regex to find collapsible elements in the format: ??? "..."
-    const findCollapsibleElements = /\?\?\?\s"[^\n]*/g;
-
     // If no collapsible elements are found, log info and return original markdown
-    if (!findCollapsibleElements.test(markdown))
+    if (!markdown.includes(`???`))
     {
       eventLogger.logInfo(`No collapsible elements detected.`);
       return markdown;
@@ -49,37 +45,13 @@ export const fixCollapsibleElements = (
 
     // Trim whitespace from each line and reconstruct the markdown
     for (let element of lines)
-      tempReplacement = tempReplacement + `${element.trim()}\n`;
+    {
+      element = element.includes("???") ? element.replace(`???`, "##").replaceAll(`"`, "").replaceAll(`**`, ``).trim() : element.trim(); // Replace collapsible elements with markdown headers
+      tempReplacement = tempReplacement + `${element}\n`;
+    }
 
     // Update markdown with trimmed lines
     markdown = tempReplacement;
-
-    // Find all collapsible elements using the regex
-    let auxArray = [...markdown.match(findCollapsibleElements)!];
-
-    // Process each collapsible element
-    for (let element of auxArray)
-    {
-      // Check if the element contains bold formatting (**)
-      if (/\*\*/.test(element))
-      {
-        // Remove ??? ", replace with ##
-        tempReplacement = element.replace(/\?\?\?\s"\*\*/, `## `);
-        // Remove closing quotation mark
-        tempReplacement = tempReplacement.replace(/"/, ``);
-        // Remove bold formatting
-        tempReplacement = tempReplacement.replace(/\*\*/, ``);
-      } else
-      {
-        // For non-bold elements, simply replace ??? " with ##
-        tempReplacement = element.replace(/\?\?\?\s"/, `## `);
-        // Remove closing quotation mark
-        tempReplacement = tempReplacement.replace(/"/, ``);
-      }
-
-      // Replace the original collapsible element with the processed header
-      markdown = markdown.replace(element, tempReplacement);
-    }
 
     // Log successful conversion
     eventLogger.logInfo(`Changed collapsible elements to <title> elements.`);
@@ -89,9 +61,7 @@ export const fixCollapsibleElements = (
   } catch (error)
   {
     // If an error occurs, log a warning and return the original markdown
-    eventLogger.logWarning(
-      `Unable to convert collapsible elements. Verify the resulting DITA file afterwards. (Error code: 101)\n${error}`,
-    );
+    eventLogger.logWarning(`Unable to convert collapsible elements. Verify the resulting DITA file afterwards. (Error code: 101)\n${error}`);
     return markdown;
   }
 };

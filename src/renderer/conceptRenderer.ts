@@ -16,12 +16,12 @@ export class ConceptRenderer extends BaseDitaRenderer
     {
         try
         {
-            markdown = this.md.render(markdown);
+            let htmlString = this.md.render(markdown);
 
-            if (!/<\?xml version="1.0" encoding="utf-8"\?>/.test(markdown))
+            if (!htmlString.includes(`<?xml version="1.0" encoding="utf-8"?>`))
                 throw "NoHeaders";
 
-            return `${markdown}\n</conbody>\n</concept>`;
+            return `${htmlString}\n</conbody>\n</concept>`;
         } catch (error)
         {
             eventLogger.logError(`Unable to convert document to DITA XML. Verify your file is properly formatted and try again. (Error code: 201)\n${error}`);

@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "module": "ES2020",
-        "target": "ES2017",
+        "target": "ES2021",
         "outDir": "./dist",
         "removeComments": true,
         "moduleResolution": "node",

@@ -18,7 +18,7 @@ export class ReferenceRenderer extends BaseDitaRenderer
         {
             markdown = this.md.render(markdown);
 
-            if (!/<\?xml version="1.0" encoding="utf-8"\?>/.test(markdown))
+            if (!markdown.includes(`<?xml version="1.0" encoding="utf-8"?>`))
                 throw "NoHeaders";
     
             return `${markdown}\n</refbody>\n</reference>`;
