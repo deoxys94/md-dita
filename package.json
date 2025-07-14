@@ -3,6 +3,6 @@
     "markdown-it": "^13.0.1"
   },
   "devDependencies": {
-    "@types/node": "^20.1.7"
+    "@types/node": "^20.2.1"
   }
 }

@@ -4,7 +4,9 @@ exports.BaseDitaRenderer = void 0;
 const MarkdownIt = require('markdown-it');
 class BaseDitaRenderer {
     constructor() {
-        this.md = new MarkdownIt();
+        this.md = new MarkdownIt({
+            html: true
+        });
         this.md.renderer.rules.blockquote_open = (tokens, idx) => {
             tokens[idx].tag = 'lq';
             return this.md.renderer.renderToken(tokens, idx);
@@ -35,8 +37,8 @@ class BaseDitaRenderer {
             const altValue = altAttr[1];
             return `<image placement="break" href="${srcValue}" alt="${altValue}"/>`;
         };
-        this.md.renderer.rules.hr = () => '';
-        this.md.renderer.rules.br = () => '';
+        this.md.renderer.rules.hardbreak = () => '\n';
+        this.md.renderer.rules.softbreak = () => '\n';
         this.md.renderer.rules.del_open = () => '';
         this.md.renderer.rules.del_close = () => '';
         this.md.renderer.rules.s_open = () => '';

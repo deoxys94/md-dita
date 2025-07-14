@@ -1,10 +1,7 @@
-import { ConceptRenderer } from "./renderer/conceptRenderer";
 import { readFileSync, writeFileSync } from "fs";
+import { MdDita } from "./md-dita";
 
-const convertToConcept: ConceptRenderer = new ConceptRenderer();
+let fileContents = readFileSync(`../../CloudOneSamples/agent-activation-failed.md`, { encoding: 'utf8', flag: 'r' });
+const mdToDita = new MdDita();
 
-let fileContents = readFileSync(`./sample.md`, { encoding: 'utf8', flag: 'r' });
-
-fileContents = convertToConcept.toDitaConcept(fileContents);
-
-writeFileSync(`output.xml`, fileContents);
+writeFileSync(`output.xml`, mdToDita.mdToConcept(fileContents));

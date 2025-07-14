@@ -30,7 +30,7 @@ const generateSections = (xml: string, type: number) =>
 export const fixSections = (xml: string, type: number) => 
 {
     let auxArray = generateSections(xml, type);
-    let tempReplacement = ``;
+    let tempReplacement: string;
 
     if (auxArray.length === 0)
         return xml;

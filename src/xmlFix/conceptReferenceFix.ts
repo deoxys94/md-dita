@@ -1,4 +1,4 @@
-export const conceptReferenceFix = (xml: string, type: number) => {
+export const fixConceptReference = (xml: string, type: number) => {
     // Step 3: Extract id attribute value from concept tag
     let id = xml.match(/<title>(.*?)<\/title>/)[0];
     id = id.replace(`<title>`, ``).replace(`</title>`, ``);

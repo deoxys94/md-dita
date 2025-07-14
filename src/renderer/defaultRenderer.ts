@@ -1,7 +1,9 @@
 const MarkdownIt = require('markdown-it'); 
 
 export abstract class BaseDitaRenderer {
-    protected md = new MarkdownIt();
+    protected md = new MarkdownIt({
+        html: true
+    });
 
     constructor(){
         this.md.renderer.rules.blockquote_open = (tokens, idx) => {
@@ -46,9 +48,9 @@ export abstract class BaseDitaRenderer {
             return `<image placement="break" href="${srcValue}" alt="${altValue}"/>`;
         };
 
-        this.md.renderer.rules.hr = () => '';
+        this.md.renderer.rules.hardbreak = () => '\n';
 
-        this.md.renderer.rules.br = () => '';
+        this.md.renderer.rules.softbreak = () => '\n';
 
         this.md.renderer.rules.del_open = () => '';
 
