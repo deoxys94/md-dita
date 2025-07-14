@@ -1,123 +1,168 @@
-export const headerColspecs = (tableReplacement: string) =>
+export const convertHtmlTables = (htmlTable: string): string =>
 {
-    let auxString = tableReplacement.match(/<thead[\s\S]+?<\/thead>/)[0];
-    let auxHeaders = `` + `<tgroup cols="${auxString.match(/<entry/g).length}">\n`
+    try
+    {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlTable, 'text/html');
+        const table = doc.querySelector('table');
+        const ditaTable = document.createElement('table');
+        ditaTable.setAttribute('outputclass', 'frame all rules all');
 
-    for (let j = 0; j < auxString.match(/<entry/g).length; j++)
-        auxHeaders = auxHeaders + `<colspec colname="c${j}" colwidth="1*"/>\n`;
+        // Create tgroup element
+        const tgroup = document.createElement('tgroup');
+        tgroup.setAttribute('cols', table!.rows[0].cells.length.toString());
+        ditaTable.appendChild(tgroup);
 
-    return auxHeaders;
+        // Create colspec elements
+        for (let i = 0; i < table!.rows[0].cells.length; i++)
+        {
+            const colspec = document.createElement('colspec');
+            colspec.setAttribute('colname', `col${i}`);
+            colspec.setAttribute('colnum', (i + 1).toString());
+            tgroup.appendChild(colspec);
+        }
+
+        // Create thead element
+        const thead = document.createElement('thead');
+        tgroup.appendChild(thead);
+
+        // Create row element for header row
+        const headerRow = document.createElement('row');
+        thead.appendChild(headerRow);
+
+        // Create entry elements for header row
+        for (let cell of table!.rows[0].cells)
+        {
+            const entry = document.createElement('entry');
+
+            // Wrap cell contents in a <p> element
+            const p = document.createElement('p');
+            entry.appendChild(p);
+
+            // Transform HTML tags inside cell to DITA XML
+            transformHtmlToDitaXml(cell, p);
+
+            // Handle merged cells
+            if (cell.colSpan > 1)
+            {
+                entry.setAttribute('namest', `col${cell.cellIndex}`);
+                entry.setAttribute('nameend', `col${cell.cellIndex + cell.colSpan - 1}`);
+            }
+            if (cell.rowSpan > 1)
+            {
+                entry.setAttribute('morerows', (cell.rowSpan - 1).toString());
+            }
+
+            headerRow.appendChild(entry);
+        }
+
+        // Create tbody element
+        const tbody = document.createElement('tbody');
+        tgroup.appendChild(tbody);
+
+        // Create row elements for body rows
+        for (let i = 1; i < table!.rows.length; i++)
+        {
+            const row = document.createElement('row');
+            tbody.appendChild(row);
+
+            // Create entry elements for body row
+            for (let cell of table!.rows[i].cells)
+            {
+                const entry = document.createElement('entry');
+
+                // Wrap cell contents in a <p> element
+                const p = document.createElement('p');
+                entry.appendChild(p);
+
+                // Transform HTML tags inside cell to DITA XML
+                transformHtmlToDitaXml(cell, p);
+
+                // Handle merged cells
+                if (cell.colSpan > 1)
+                {
+                    entry.setAttribute(
+                        'namest',
+                        `col${cell.cellIndex}`
+                    );
+                    entry.setAttribute(
+                        'nameend',
+                        `col${cell.cellIndex + cell.colSpan - 1}`
+                    );
+                }
+                if (cell.rowSpan > 1)
+                {
+                    entry.setAttribute(
+                        'morerows',
+                        (cell.rowSpan - 1).toString()
+                    );
+                }
+
+                row.appendChild(entry);
+            }
+        }
+
+        // Format the DITA XML table with each tag on a separate line and colspec elements as self-closing tags
+        let formattedDitaTable = ditaTable.outerHTML;
+        formattedDitaTable = formattedDitaTable.replace(/></g, '>\n<');
+        formattedDitaTable = formattedDitaTable.replace(
+            /<colspec([^>]*)><\/colspec>/g,
+            '<colspec$1/>'
+        );
+
+        return formattedDitaTable;
+    } catch (error)
+    {
+        console.error(error);
+        return '<table outputclass="frame all rules all"><tgroup cols="0"></tgroup></table>';
+    }
 }
 
-export const firstRowColspecs = (tableReplacement: string) =>
+// Helper function to transform HTML tags inside a table cell to DITA XML
+const transformHtmlToDitaXml = (htmlElement: HTMLElement, ditaElement: HTMLElement) =>
 {
-    let auxString = tableReplacement.match(/<tbody[\s\S]+?<\/tbody>/)[0];
-    auxString = auxString.match(/<row[\s\S]+?<\/row>/)[0];
-
-    if (!/colspan=\"(.*?)\"/.test(auxString))
+    for (let child of htmlElement.childNodes)
     {
-        console.warn(`[Warning] Unable to generate colspecs.`);
-        return `<tgroup cols="1">\n<colspec colname="c1" colwidth="1*"/>\n`
-    }
-
-    let auxColumns = [...auxString.match(/colspan=\"(.*?)\"/g)];
-    let totalColNumber = 0;
-
-    for (let j = 0; j < auxColumns.length; j++)
-    {
-        auxColumns[j] = auxColumns[j].substring(9, auxColumns[j].length - 1);
-
-        totalColNumber = totalColNumber + (Number(auxColumns[j]) - 1);
-    }
-
-    totalColNumber = totalColNumber + auxString.match(/<entry/g).length;
-
-    let auxHeaders = `` + `<tgroup cols="${totalColNumber}">\n`;
-
-    for (let j = 0; j < totalColNumber; j++)
-    {
-        auxHeaders = auxHeaders + `<colspec colname="c${j}" colwidth="1*"/>\n`;
-    }
-
-    return auxHeaders;
-}
-
-export const convertHtmlTables = (xml: string) =>
-{
-    let auxHeaders: string; // Slice to generate colspecs
-    let tableArray = [];
-    let tableReplacement: string;
-    let hasTheadTag = false;
-    let hasTbodyTag = false;
-    let hasThTag = false;
-
-    if (!/<table[\s\S]+?<\/table>/g.test(xml))
-    { // Check if there are any tables
-        console.info("[Info] No tables found");
-        return xml;
-    }
-
-    tableArray = [...xml.match(/<table[\s\S]+?<\/table>/g)]; // Put all tables in an array
-
-    for (let table of tableArray) // Convert each table
-    {
-        tableReplacement = table;
-
-        // Do the pre-checks before splitting the table
-        hasTbodyTag = /<tbody[^>]*>/.test(table) ? true : false;
-        hasTheadTag = /<thead[^>]*>/.test(table) ? true : false;
-        hasThTag = /<th[^>]*>/.test(table) ? true : false;
-
-        // Insert the tags as needed
-        // Insert head tag if the table has only the th tag somewhere
-        if (!hasTheadTag && hasThTag)
+        if (child.nodeType === Node.TEXT_NODE)
         {
-            tableReplacement = tableReplacement.replace(/<tr>/, `<thead>\n<tr>\n`);
-            tableReplacement = tableReplacement.replace(/<\/tr>/, `</tr>\n</thead>\n`);
-            hasTheadTag = true;
-        }
-
-        // Insert body tag if the table has the head tag
-        if (!hasTbodyTag && hasTheadTag)
+            ditaElement.appendChild(document.createTextNode(child.textContent!));
+        } else if (child.nodeType === Node.ELEMENT_NODE)
         {
-            tableReplacement = tableReplacement.replace(/<\/thead>/, `</thead>\n<tbody>\n`);
-            tableReplacement = tableReplacement.replace(/<\/table>/, `</tbody>\n</table>\n`);
+            let ditaChild: HTMLElement | undefined;
+
+            switch ((child as HTMLElement).tagName)
+            {
+                case 'B':
+                case 'STRONG':
+                    ditaChild = document.createElement('b');
+                    break;
+                case 'I':
+                case 'EM':
+                    ditaChild = document.createElement('i');
+                    break;
+                case 'U':
+                    ditaChild = document.createElement('u');
+                    break;
+                case 'BR':
+                    ditaChild = document.createElement('br');
+                    break;
+                case 'A':
+                    ditaChild = document.createElement('xref');
+                    ditaChild.setAttribute(
+                        'href',
+                        (child as HTMLAnchorElement).href
+                    );
+                    break;
+                default:
+                    ditaChild = document.createElement((child as HTMLElement).tagName.toLowerCase());
+                    break;
+            }
+
+            if (ditaChild)
+            {
+                transformHtmlToDitaXml(child as HTMLElement, ditaChild);
+                ditaElement.appendChild(ditaChild);
+            }
         }
-
-        if (hasTbodyTag && !hasTheadTag)
-        {
-            tableReplacement = tableReplacement.replace(/<tbody>/, `<thead>\n<row><\/row><\/thead>\n<tbody>\n`);
-        }
-
-        // Delete tags and attributes that don't exist in DITA
-        tableReplacement = tableReplacement.replace(/<\/?colspec[^>]*>/g, ``);
-        tableReplacement = tableReplacement.replace(/<col[^>]*>/g, ``);
-        tableReplacement = tableReplacement.replace(/<tr>/g, `<row>`);
-        tableReplacement = tableReplacement.replace(/<\/tr>/g, `</row>`);
-        tableReplacement = tableReplacement.replace(/<td\s/g, `<entry `);
-        tableReplacement = tableReplacement.replace(/<td>/g, `<entry>`);
-        tableReplacement = tableReplacement.replace(/<\/td>/g, `</entry>`);
-        tableReplacement = tableReplacement.replace(/<th\s/g, `<entry `);
-        tableReplacement = tableReplacement.replace(/<th>/g, `<entry>`);
-        tableReplacement = tableReplacement.replace(/<\/th>/g, `</entry>`);
-        tableReplacement = tableReplacement.replace(/<table[^>]*>/g, `<table frame="all" rowsep="1" colsep="1">\n<colspec-needed>\n`);
-
-        // Generate colspecs
-        auxHeaders = ``; // Clean variable
-
-        auxHeaders = !/colspan=\"(.*?)\"/.test(tableReplacement) ? headerColspecs(tableReplacement) : firstRowColspecs(tableReplacement);
-
-        tableReplacement = tableReplacement.replace(/\scolspan=\"(.*?)\"/g, ` colname="this_cell_needs_to_be_merged_colspan"`);
-        tableReplacement = tableReplacement.replace(/\srowspan=\"(.*?)\"/g, ` audience="this_cell_needs_to_be_merged_rowspan"`);
-        tableReplacement = tableReplacement.replace(/\sstyle=\"(.*?)\"/g, ``);
-        tableReplacement = tableReplacement.replace(/\swidth=\"(.*?)\"/g, ``);
-        tableReplacement = tableReplacement.replace(/<colspec-needed>/, auxHeaders)
-        tableReplacement = tableReplacement.replace(/<\/table>/, `</tgroup>\n</table>`)
-
-        xml = xml.replace(table, tableReplacement);
     }
-
-    console.info(`[Info] Converted all tables to DITA XML tables.`);
-
-    return xml;
 }
