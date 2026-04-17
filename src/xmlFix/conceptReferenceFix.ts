@@ -21,7 +21,7 @@ export const fixConceptReference = (xml: string, type: number, eventLogger: any)
         const titleContent = $('title').first().text();
 
         // Step 4: Modify and create ID from title
-        const id = titleContent.replace(/[^A-Za-z0-9 ]/g, "").replace(/\s+/g, "_").toLowerCase();
+        const id = (titleContent.replace(/[^A-Za-z0-9 ]/g, "").replace(/\s+/g, "_").toLowerCase()) || "topic";
 
         // Update the ID attribute based on type
         if (type === 1)

@@ -14,7 +14,7 @@ export const convertHtmlTables = (xml: string, eventLogger: simpleLogger): strin
     const $xml = cheerio.load(xml, { xml: { decodeEntities: false } });
     const tables = $xml('table');
     // Regular expressions
-    const hardLineBreak: RegExp = /\<br\s?\/?\>/g;
+    const hardLineBreak: RegExp = /\<br\s?\/?\>/;
 
     // If no tables are found, return the original XML unchanged
     if (tables.length === 0)

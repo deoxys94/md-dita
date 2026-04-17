@@ -8,7 +8,7 @@ export const applyAdditionalFixes = (markdown: string, eventLogger: simpleLogger
 
 	markdown = markdown.replace("**Footnotes:**", "");
 	markdown = markdown.replace(styleRegex, "");
-	markdown = markdown.replace("## ", "\n## ");
+	markdown = markdown.replaceAll("## ", "\n## ");
 
 	return markdown
 }

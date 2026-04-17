@@ -34,7 +34,13 @@ const generateSections = (xml: string, type: number,  eventLogger: any): string[
     const lastSectionPattern: RegExp = /(<section>)[\s\S]*/;
 
     let sections: string[] = [];
-    let topicBody = type === 1 ? xml.match(conbodyPattern)![0] : xml.match(refbodyPattern)![0]; // Get all the content inside the conbody/refbody element
+    const topicBodyMatch = type === 1 ? xml.match(conbodyPattern) : xml.match(refbodyPattern);
+    if (!topicBodyMatch)
+    {
+        eventLogger.logInfo(`No topic body found.`);
+        return [];
+    }
+    let topicBody = topicBodyMatch[0]; // Get all the content inside the conbody/refbody element
 
     // Get rid of both the opening and closing tag
     topicBody = type === 1 ? topicBody.replace("<conbody>", ``).replace("<\/conbody>", ``) : topicBody.replace("<refbody>", ``).replace("<\/refbody>", ``);

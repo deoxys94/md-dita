@@ -4,7 +4,13 @@ const generateSubTasks = (xml: string, eventLogger: any): string[] =>
     const subtaskPattern: RegExp = /(<title>)([\s\S]*?)(?=<title>)/g
     const finalSubtaskPattern: RegExp = /(<title>)[\s\S]*/;
 
-    let taskBody = xml.match(taskBodyPattern)![0]; // Get all the content inside the taskbody element
+    const taskBodyMatch = xml.match(taskBodyPattern);
+    if (!taskBodyMatch)
+    {
+        eventLogger.logInfo(`No task body found.`);
+        return [];
+    }
+    let taskBody = taskBodyMatch[0]; // Get all the content inside the taskbody element
     let subTasks: string[] = [];
 
     taskBody = taskBody.replace("<taskbody>", ``); // Delete the taskbody tags

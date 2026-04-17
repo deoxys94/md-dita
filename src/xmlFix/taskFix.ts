@@ -28,10 +28,10 @@ export const fixTask = (xml: string, eventLogger: any) =>
     const titleContent = $("title").first().text();
 
     // Step 4: Modify and create ID from title
-    const id = titleContent
+    const id = (titleContent
       .replace(/[^A-Za-z0-9 ]/g, "")
       .replace(/\s+/g, "_")
-      .toLowerCase();
+      .toLowerCase()) || "task";
 
     // Replace the id of the <concept> element
     $("task[id]").first().attr("id", id);
@@ -54,17 +54,12 @@ export const fixTask = (xml: string, eventLogger: any) =>
           .children("steps:not(:first)")
           .each((_, stepsElement) =>
           {
-            // Replace <steps> with <ul>, preserving content
-            $(stepsElement).replaceWith(
-              "<ol>" + $(stepsElement).html() + "</ol>",
-            );
-
-            // Replace <step> with <li>, preserving content
-            $("ol")
+            const olContent = $(stepsElement)
               .children("step")
-              .replaceWith(
-                "<li>" + $(stepsElement).children("step").html() + "</li>",
-              );
+              .map((_, step) => "<li>" + $(step).html() + "</li>")
+              .get()
+              .join("");
+            $(stepsElement).replaceWith("<ol>" + olContent + "</ol>");
           });
       }
 
