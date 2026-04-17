@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
+import { simpleLogger } from "../md-dita";
 
-export const convertNotes = (xml: string, eventLogger: any): string =>
+export const convertNotes = (xml: string, eventLogger: simpleLogger): string =>
 {
     const simpleNotePattern = /\{:?\s?.(note|tip|warning)\s?\}/;
     try

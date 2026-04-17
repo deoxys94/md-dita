@@ -1,13 +1,15 @@
 import { fixSections } from "./sections";
 import * as cheerio from 'cheerio';
+import { simpleLogger } from "../md-dita";
+import { TopicType } from "../types";
 
-export const fixConceptReference = (xml: string, type: number, eventLogger: any) =>
+export const fixConceptReference = (xml: string, type: TopicType, eventLogger: simpleLogger) =>
 {
     eventLogger.logInfo(`Fixing concept/reference elements`);
     try
     {
         // Apply fixSections based on type (keeping this unchanged)
-        xml = type === 1 ? fixSections(xml, 1, eventLogger) : fixSections(xml, 2, eventLogger);
+        xml = type === TopicType.Concept ? fixSections(xml, TopicType.Concept, eventLogger) : fixSections(xml, TopicType.Reference, eventLogger);
 
         if (xml === ``)
             return ``;
@@ -24,7 +26,7 @@ export const fixConceptReference = (xml: string, type: number, eventLogger: any)
         const id = (titleContent.replace(/[^A-Za-z0-9 ]/g, "").replace(/\s+/g, "_").toLowerCase()) || "topic";
 
         // Update the ID attribute based on type
-        if (type === 1)
+        if (type === TopicType.Concept)
         {
             // For concept elements that already have an id attribute
             $('concept[id]').first().attr('id', id);

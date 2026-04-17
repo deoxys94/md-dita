@@ -1,3 +1,6 @@
+import { simpleLogger } from "../md-dita";
+import { TopicType } from "../types";
+
 /**
  * Gets the contents of each section from a given "raw" XML
  * 
@@ -25,7 +28,7 @@
  * 
  *  This will be useful later to generate the sections properly later on
  */
-const generateSections = (xml: string, type: number,  eventLogger: any): string[] => 
+const generateSections = (xml: string, type: TopicType, eventLogger: simpleLogger): string[] =>
 {
     // Regular expressions
     const refbodyPattern: RegExp = /<refbody[\s\S]+?<\/refbody>/;
@@ -43,7 +46,7 @@ const generateSections = (xml: string, type: number,  eventLogger: any): string[
     let topicBody = topicBodyMatch[0]; // Get all the content inside the conbody/refbody element
 
     // Get rid of both the opening and closing tag
-    topicBody = type === 1 ? topicBody.replace("<conbody>", ``).replace("<\/conbody>", ``) : topicBody.replace("<refbody>", ``).replace("<\/refbody>", ``);
+    topicBody = type === TopicType.Concept ? topicBody.replace("<conbody>", ``).replace("<\/conbody>", ``) : topicBody.replace("<refbody>", ``).replace("<\/refbody>", ``);
 
     // Check if there are any sections
     if (!topicBody.includes("<section>"))
@@ -73,7 +76,7 @@ const generateSections = (xml: string, type: number,  eventLogger: any): string[
  * Fixes the sections based on the information from the generateSections function.
  * After getting the "raw" sections, this function will clean them up and put them in the correct place
  */
-export const fixSections = (xml: string, type: number,  eventLogger: any): string => 
+export const fixSections = (xml: string, type: TopicType, eventLogger: simpleLogger): string =>
 {
     const refbodyPattern: RegExp = /<refbody>\n<section>/;
     try 
@@ -82,7 +85,7 @@ export const fixSections = (xml: string, type: number,  eventLogger: any): strin
         let tempReplacement: string = ``;
     
         if (auxArray.length === 0) // Check if there are any sections
-            return (type === 1) ? xml : xml.replace("<refbody>", `<refbody>\n<section>`).replace("</refbody>", `</section>\n</refbody>`); // If there are no sections, return a refbody with one section
+            return (type === TopicType.Concept) ? xml : xml.replace("<refbody>", `<refbody>\n<section>`).replace("</refbody>", `</section>\n</refbody>`); // If there are no sections, return a refbody with one section
 
         for (let element of auxArray) 
         {
@@ -92,7 +95,7 @@ export const fixSections = (xml: string, type: number,  eventLogger: any): strin
             xml = xml.replace(element, tempReplacement); // Replace the raw section with the cleaned one
         }
     
-        if(type === 2) // If it's a reference, fix the malformed refbody
+        if (type === TopicType.Reference) // If it's a reference, fix the malformed refbody
         {
             if(!refbodyPattern.test(xml))
                 xml = xml.replace("<section>", `</section>\n<section>`).replace("<refbody>", `<refbody>\n<section>`)

@@ -43,10 +43,17 @@ export const fixCollapsibleElements = (markdown: string, eventLogger: simpleLogg
     // Variable to store processed markdown with trimmed lines
     let tempReplacement: string = ``;
 
-    // Trim whitespace from each line and reconstruct the markdown
+    // Trim whitespace from each line, but preserve indentation inside code fences
+    let inCodeBlock = false;
     for (let element of lines)
     {
-      element = element.includes("???") ? element.replace(`???`, "##").replaceAll(`"`, "").replaceAll(`**`, ``).trim() : element.trim(); // Replace collapsible elements with markdown headers
+      if (element.trim().startsWith("```")) inCodeBlock = !inCodeBlock;
+
+      if (element.includes("???"))
+        element = element.replace(`???`, "##").replaceAll(`"`, "").replaceAll(`**`, ``).trim();
+      else if (!inCodeBlock)
+        element = element.trim();
+
       tempReplacement = tempReplacement + `${element}\n`;
     }
 

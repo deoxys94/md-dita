@@ -1,5 +1,6 @@
 import { fixSubtasks } from "./subtasks";
 import * as cheerio from "cheerio";
+import { simpleLogger } from "../md-dita";
 
 const fixClutteredCmd = ($cmd: any) =>
 {
@@ -10,7 +11,7 @@ const fixClutteredCmd = ($cmd: any) =>
   if ($elementsToMove.length > 0) $cmd.after($elementsToMove); // Move them after the cmd element
 };
 
-export const fixTask = (xml: string, eventLogger: any) =>
+export const fixTask = (xml: string, eventLogger: simpleLogger) =>
 {
   eventLogger.logInfo(`Fixing task elements`);
   try

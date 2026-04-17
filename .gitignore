@@ -2,5 +2,6 @@ node_modules/
 testing/
 dist/
 .vscode/
+.claude/
 *.md
 *.xml

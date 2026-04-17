@@ -1,4 +1,5 @@
 import { BaseDitaRenderer } from "./defaultRenderer";
+import { simpleLogger } from "../md-dita";
 
 export class TaskRenderer extends BaseDitaRenderer
 {
@@ -19,7 +20,7 @@ export class TaskRenderer extends BaseDitaRenderer
         this.md.renderer.rules.ordered_list_close = (tokens, idx) => tokens[idx].level === 0 ? '\n</steps>\n' : this.md.renderer.renderToken(tokens, idx, {});
     }
 
-    toDitaTask(markdown: string, eventLogger: any): string
+    toDitaTask(markdown: string, eventLogger: simpleLogger): string
     {
         try
         {

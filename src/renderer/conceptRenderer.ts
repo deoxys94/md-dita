@@ -1,4 +1,5 @@
 import { BaseDitaRenderer } from "./defaultRenderer";
+import { simpleLogger } from "../md-dita";
 
 export class ConceptRenderer extends BaseDitaRenderer
 {
@@ -12,7 +13,7 @@ export class ConceptRenderer extends BaseDitaRenderer
 
     }
 
-    toDitaConcept(markdown: string, eventLogger: any): string
+    toDitaConcept(markdown: string, eventLogger: simpleLogger): string
     {
         try
         {

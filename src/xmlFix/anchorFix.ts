@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
+import { simpleLogger } from "../md-dita";
 
-export const fixAnchorIdForTitles = (xml: string, eventLogger: any): string =>
+export const fixAnchorIdForTitles = (xml: string, eventLogger: simpleLogger): string =>
 {
     eventLogger.logInfo(`Fixing anchor IDs for titles`);
     // Regular expression to match text enclosed by curly braces

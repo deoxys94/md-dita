@@ -1,4 +1,6 @@
-const generateSubTasks = (xml: string, eventLogger: any): string[] => 
+import { simpleLogger } from "../md-dita";
+
+const generateSubTasks = (xml: string, eventLogger: simpleLogger): string[] =>
 {
     const taskBodyPattern: RegExp = /<taskbody[\s\S]+?<\/taskbody>/;
     const subtaskPattern: RegExp = /(<title>)([\s\S]*?)(?=<title>)/g
@@ -36,7 +38,7 @@ const generateSubTasks = (xml: string, eventLogger: any): string[] =>
     return subTasks;
 };
 
-export const fixSubtasks = (xml: string, eventLogger: any): string => 
+export const fixSubtasks = (xml: string, eventLogger: simpleLogger): string =>
 {
     try
     {
