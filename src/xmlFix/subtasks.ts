@@ -1,83 +1,77 @@
+import * as cheerio from 'cheerio';
 import { simpleLogger } from "../md-dita";
 
-const generateSubTasks = (xml: string, eventLogger: simpleLogger): string[] =>
-{
-    const taskBodyPattern: RegExp = /<taskbody[\s\S]+?<\/taskbody>/;
-    const subtaskPattern: RegExp = /(<title>)([\s\S]*?)(?=<title>)/g
-    const finalSubtaskPattern: RegExp = /(<title>)[\s\S]*/;
-
-    const taskBodyMatch = xml.match(taskBodyPattern);
-    if (!taskBodyMatch)
-    {
-        eventLogger.logInfo(`No task body found.`);
-        return [];
-    }
-    let taskBody = taskBodyMatch[0]; // Get all the content inside the taskbody element
-    let subTasks: string[] = [];
-
-    taskBody = taskBody.replace("<taskbody>", ``); // Delete the taskbody tags
-    taskBody = taskBody.replace("<\/taskbody>", ``);
-
-    if (!taskBody.includes("<title>")) 
-    { // If there are no subtasks, return
-        eventLogger.logInfo(`No subtasks detected.`);
-        return [];
-    }
-
-    // Note: avoid reusing global regex between .test() and .match() — lastIndex state causes inconsistency
-    const subtaskMatches = taskBody.match(subtaskPattern);
-    if (subtaskMatches)
-    { // Verify if there are more than 1 subtasks
-        subTasks = subtaskMatches; // Get all subtasks
-
-        for (let element of subTasks)
-            taskBody = taskBody.replace(element, ``); // Remove them from taskbody
-    }
-
-    // Grab the "lonely" last subtask
-    const finalSubtaskMatch = taskBody.match(finalSubtaskPattern);
-    if (finalSubtaskMatch)
-        subTasks.push(finalSubtaskMatch[0]);
-    else
-    {
-        eventLogger.logInfo(`No trailing subtask found after processing.`);
-        return subTasks; // return whatever was collected so far
-    }
-
-    eventLogger.logInfo(`Subtasks generated.`);
-    return subTasks;
-};
-
+/**
+ * Splits a DITA task XML string into a main task and nested subtasks using
+ * Cheerio DOM manipulation.
+ *
+ * When multiple H2 headings are present in a task Markdown file, Markdown-it
+ * renders them as bare `<title>` elements directly inside `<taskbody>`, with
+ * their content (steps, info, etc.) following as orphaned siblings. This
+ * function identifies those `<title>` markers, collects their following sibling
+ * content up to the next `<title>`, and wraps each group in a proper nested
+ * `<task>` element appended after the main `</taskbody>`.
+ */
 export const fixSubtasks = (xml: string, eventLogger: simpleLogger): string =>
 {
     try
     {
         eventLogger.logInfo(`Fixing subtasks`);
-        let subtaskArray = generateSubTasks(xml, eventLogger);
-        let tempReplacement: string = ``;
-        let i = 1;
 
-        if (subtaskArray.length === 0)
-            return xml;
+        const $ = cheerio.load(xml, { xml: { decodeEntities: false } });
+        const taskbody = $('taskbody');
 
-        for (let element of subtaskArray)
+        if (taskbody.length === 0)
         {
-            xml = xml.replace(element, ``); // Remove original element
-            tempReplacement = tempReplacement + `
-<task id="sub_task_${i}">
-${element.replace("<\/title>", `</title>
-<taskbody>`)}
-</taskbody>
-</task>`;
-            i++;
+            eventLogger.logInfo(`No task body found.`);
+            return xml;
         }
 
-        xml = xml.replace(`</taskbody>`, `</taskbody>\n${tempReplacement}`);
+        const titles = taskbody.children('title');
 
-        return xml;
+        if (titles.length === 0)
+        {
+            eventLogger.logInfo(`No subtasks detected.`);
+            return xml;
+        }
+
+        // Pass 1 (read-only): collect subtask data and the nodes to remove,
+        // before any DOM mutations that could affect sibling traversal
+        const subtaskData: Array<{ titleHtml: string; bodyHtml: string }> = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const nodesToRemove: any[] = [];
+
+        titles.each((_, titleEl) =>
+        {
+            const $title = $(titleEl);
+            const orphans = $title.nextUntil('title');
+
+            subtaskData.push({
+                titleHtml: $.html(titleEl),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                bodyHtml: orphans.map((_, n) => $.html(n as any)).get().join(''),
+            });
+
+            nodesToRemove.push(titleEl);
+            orphans.each((_, node) => { nodesToRemove.push(node); });
+        });
+
+        // Pass 2 (write): remove subtask nodes from taskbody
+        $(nodesToRemove).remove();
+
+        // Build nested <task> XML and insert after the main </taskbody>
+        let subtaskXml = '';
+        subtaskData.forEach(({ titleHtml, bodyHtml }, index) =>
+        {
+            subtaskXml += `\n<task id="sub_task_${index + 1}">\n${titleHtml}\n<taskbody>\n${bodyHtml}\n</taskbody>\n</task>`;
+        });
+
+        taskbody.after(subtaskXml);
+
+        return $.html();
     } catch (error)
     {
         eventLogger.logError(`Unable to fix subtasks. (Error code: 204)\n${error}`);
         return ``;
     }
-}
+};

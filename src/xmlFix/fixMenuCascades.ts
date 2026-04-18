@@ -74,8 +74,8 @@ export const fixMenuCascadeElements = (xml: string, eventLogger: simpleLogger): 
         // Add each part as a uicontrol
         parts.forEach(part =>
         {
-          // Remove any nested codeph tags if they exist
-          const cleanPart = part.replace(/<\/?codeph>/g, '').trim();
+          // Strip any nested tags (e.g. codeph) using cheerio text extraction
+          const cleanPart = cheerio.load(part, { xml: { decodeEntities: false } }).text().trim();
           if (cleanPart)
           {
             replacement.append($(`<uicontrol>${cleanPart}</uicontrol>`));
@@ -83,8 +83,8 @@ export const fixMenuCascadeElements = (xml: string, eventLogger: simpleLogger): 
         });
       } else
       {
-        // Wrap with a single uicontrol element
-        const cleanText = text.replace(/<\/?codeph>/g, '').trim();
+        // Wrap with a single uicontrol element (text is already tag-free from .text())
+        const cleanText = text;
         replacement = $(`<uicontrol>${cleanText}</uicontrol>`);
       }
 
