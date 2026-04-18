@@ -34,24 +34,88 @@ bun dist/main.js --input <file> --type <concept|reference|task> [options]
 
 | Flag | Required | Default | Description |
 |------|----------|---------|-------------|
-| `--input <file>` | Yes | — | Path to the Markdown file to convert |
-| `--type <type>` | Yes | — | DITA topic type: `concept`, `reference`, or `task` |
-| `--output <file>` | No | `output.xml` | Output path |
+| `--input <path>` | Yes | — | Path to a Markdown file or directory |
+| `--type <type>` | Yes* | — | DITA topic type: `concept`, `reference`, `task`, or `auto`. *Not required when `--interactive` is used. |
+| `--output <path>` | No† | `output.xml` | Output file or directory. †Required when `--input` is a directory. |
 | `--flavor <flavor>` | No | `commonmark` | Markdown dialect: `commonmark`, `gfm`, `mkdocs`, `docusaurus` |
 | `--no-html-cleanup` | No | — | Skip HTML table and note conversion |
+| `--recursive` | No | — | Walk subdirectories when `--input` is a directory |
+| `--interactive` | No | — | Generate a manifest for per-file type control (see below) |
 
 ### Examples
 
 ```bash
 # CommonMark (default)
-bun dist/main.js --input docs/overview.md --type concept --output overview.dita
+bun run src/main.ts --input docs/overview.md --type concept --output overview.dita
 
 # MkDocs source document
-bun dist/main.js --input docs/guide.md --type reference --flavor mkdocs
+bun run src/main.ts --input docs/guide.md --type reference --flavor mkdocs
 
 # Docusaurus source, skip HTML cleanup
-bun dist/main.js --input docs/task.md --type task --flavor docusaurus --no-html-cleanup
+bun run src/main.ts --input docs/task.md --type task --flavor docusaurus --no-html-cleanup
+
+# Batch convert an entire directory
+bun run src/main.ts --input docs/ --type concept --output out/ --recursive
+
+# Auto-detect type per file
+bun run src/main.ts --input docs/ --type auto --output out/ --recursive
 ```
+
+---
+
+### Auto-detect mode (`--type auto`)
+
+When `--type auto` is used, the tool inspects each file's content and picks the most appropriate DITA topic type automatically:
+
+| Signal in file | Detected type |
+|----------------|--------------|
+| Contains a Markdown pipe table or HTML `<table>` | `reference` |
+| Contains a top-level ordered list (not inside a code block) | `task` |
+| Neither of the above | `concept` |
+
+Table detection takes priority over ordered-list detection. A file with both a table and an ordered list is classified as `reference`.
+
+> **Limitation:** Heuristic detection can be wrong. A file with an ordered list that is not a step sequence, or a reference topic that happens to have no tables, will be misclassified. Always review the converted output. The tool will print a warning and ask you to press Enter before starting conversion in auto mode.
+
+---
+
+### Interactive mode (`--interactive`)
+
+Interactive mode gives you full per-file control over topic types without having to run the tool once per file. It works in two passes.
+
+**Pass 1 — generate manifest:**
+
+```bash
+bun run src/main.ts --input docs/ --output out/ --interactive --recursive
+```
+
+The tool scans all `.md` files, auto-detects a type for each, and writes a `md-dita-manifest.json` file to the output directory. No conversion happens yet.
+
+```json
+{
+  "inputDir": "/absolute/path/to/docs",
+  "outputDir": "/absolute/path/to/out",
+  "flavor": "commonmark",
+  "recursive": true,
+  "files": {
+    "overview.md": "concept",
+    "api/endpoints.md": "reference",
+    "guides/setup.md": "task"
+  }
+}
+```
+
+Edit the `"files"` map to correct any misdetected types. Valid values: `concept`, `reference`, `task`.
+
+**Pass 2 — convert using manifest:**
+
+Run the exact same command again:
+
+```bash
+bun run src/main.ts --input docs/ --output out/ --interactive --recursive
+```
+
+The tool detects the manifest, verifies that `inputDir` matches, and converts each file using its specified type. Files missing from the filesystem are skipped with a warning. The manifest is retained after conversion so you can re-run or audit what was used.
 
 ---
 

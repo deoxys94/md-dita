@@ -19,3 +19,23 @@ export interface ConversionOptions {
   /** Emit verbose log output. Default: false. */
   verbose?: boolean;
 }
+
+/** String union of valid DITA topic type names, used in manifests and auto-detection. */
+export type TopicTypeString = 'concept' | 'reference' | 'task';
+
+/** JSON manifest written by interactive mode Pass 1 and read by Pass 2. */
+export interface InteractiveManifest {
+  /** Absolute path to the input directory used when this manifest was generated. */
+  inputDir: string;
+  /** Absolute path to the output directory. */
+  outputDir: string;
+  /** Markdown flavor in use at generation time. The CLI --flavor flag always takes precedence on re-run. */
+  flavor: FlavorType;
+  /** Whether recursive scanning was active at generation time. */
+  recursive: boolean;
+  /**
+   * Map of relative file paths (from inputDir) to topic type strings.
+   * Keys always use forward-slash separators regardless of OS.
+   */
+  files: Record<string, TopicTypeString>;
+}

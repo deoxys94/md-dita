@@ -1,10 +1,10 @@
 {
     "compilerOptions": {
-        "module": "ES2020",
+        "module": "NodeNext",
         "target": "ES2021",
         "outDir": "./dist",
         "removeComments": true,
-        "moduleResolution": "node",
+        "moduleResolution": "NodeNext",
         "allowSyntheticDefaultImports": true,
         "strict": true,
         "noUnusedLocals": true,

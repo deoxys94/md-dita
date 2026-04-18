@@ -126,3 +126,73 @@ export const GFM_ALERT_CAUTION = `# My Topic
 export const GFM_PLAIN_BLOCKQUOTE = `# My Topic
 
 > This is a plain blockquote.`;
+
+// ---------------------------------------------------------------------------
+// Auto-detect fixtures
+// ---------------------------------------------------------------------------
+
+export const AUTO_PROSE_ONLY = `# Overview
+
+Some introductory text with no lists or tables.
+
+Another paragraph here.`;
+
+export const AUTO_ORDERED_LIST = `# Installation Steps
+
+1. Download the package
+2. Run the installer
+3. Verify the installation`;
+
+export const AUTO_PIPE_TABLE = `# API Reference
+
+| Parameter | Type   | Description      |
+|-----------|--------|------------------|
+| id        | string | The resource ID  |
+| name      | string | The display name |`;
+
+export const AUTO_HTML_TABLE = `# Configuration
+
+<table>
+  <thead><tr><th>Key</th><th>Value</th></tr></thead>
+  <tbody><tr><td>debug</td><td>false</td></tr></tbody>
+</table>`;
+
+export const AUTO_TABLE_AND_ORDERED_LIST = `# Mixed Content
+
+| Column A | Column B |
+|----------|----------|
+| Value 1  | Value 2  |
+
+1. First step
+2. Second step`;
+
+export const AUTO_LIST_IN_FENCE = `# Documentation
+
+Some prose here.
+
+\`\`\`
+1. This is inside a code block
+2. Should not trigger task detection
+\`\`\`
+
+More prose after the block.`;
+
+export const AUTO_INDENTED_LIST = `# My Topic
+
+Some text.
+
+  1. This list is indented — not a top-level ordered list`;
+
+export const AUTO_LARGE_ORDERED_LIST = `# Setup Guide
+
+1. Step one
+2. Step two
+3. Step three
+4. Step four
+5. Step five
+6. Step six
+7. Step seven
+8. Step eight
+9. Step nine
+10. Step ten
+11. Step eleven`;
