@@ -1,16 +1,53 @@
 {
-    "dependencies": {
-        "@types/markdown-it": "^14.1.2",
-        "@xmldom/xmldom": "^0.9.8",
-        "cheerio": "^1.0.0",
-        "html-entities": "^2.5.2",
-        "markdown-it": "^14.1.0"
-    },
-    "devDependencies": {
-        "@types/node": "^22.13.10",
-        "jsdom": "^26.0.0",
-        "ts-loader": "^9.5.2",
-        "webpack": "^5.98.0",
-        "webpack-cli": "^6.0.1"
-    }
+	"name": "md-dita",
+	"version": "1.0.0",
+	"description": "Markdown to DITA XML converter. Supports concept, reference, and task topic types.",
+	"keywords": [
+		"markdown",
+		"dita",
+		"xml",
+		"convert",
+		"md",
+		"oxygenxml"
+	],
+	"homepage": "https://github.com/aldair-torres/md-dita",
+	"bugs": {
+		"url": "https://github.com/aldair-torres/md-dita/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/aldair-torres/md-dita.git"
+	},
+	"license": "GPL-2.0-or-later",
+	"author": "Aldair Torres",
+	"main": "./dist/md-dita.js",
+	"module": "./dist/md-dita.js",
+	"types": "./dist/md-dita.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/md-dita.d.ts",
+			"import": "./dist/md-dita.js",
+			"default": "./dist/md-dita.js"
+		}
+	},
+	"bin": {
+		"md-dita": "./dist/main.js"
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc"
+	},
+	"dependencies": {
+		"@types/markdown-it": "^14.1.2",
+		"cheerio": "^1.0.0",
+		"html-entities": "^2.5.2",
+		"markdown-it": "^14.1.0"
+	},
+	"devDependencies": {
+		"@types/node": "^22.13.10",
+		"ts-loader": "^9.5.2",
+		"typescript": "^5.0.0"
+	}
 }
