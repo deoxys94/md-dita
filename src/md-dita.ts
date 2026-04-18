@@ -9,7 +9,7 @@ import { fixTask } from "./xmlFix/taskFix";
 import { fixAnchorIdForTitles } from "./xmlFix/anchorFix";
 import * as cheerio from 'cheerio';
 import { fixCommonElements } from "./preliminaryFixes/preliminaryFixes";
-import { TopicType } from "./types";
+import { ConversionOptions, FlavorType, TopicType } from "./types";
 
 export class simpleLogger
 {
@@ -64,10 +64,16 @@ export class simpleLogger
 export class MdDita
 {
   private eventLogger: simpleLogger;
+  private options: Required<ConversionOptions>;
 
-  constructor(verbose: boolean)
+  constructor(options: ConversionOptions = {})
   {
-    this.eventLogger = new simpleLogger(verbose);
+    this.options = {
+      flavor: options.flavor ?? FlavorType.CommonMark,
+      htmlCleanup: options.htmlCleanup ?? true,
+      verbose: options.verbose ?? false,
+    };
+    this.eventLogger = new simpleLogger(this.options.verbose);
   }
 
   public get getLogs()
@@ -166,14 +172,19 @@ export class MdDita
     this.eventLogger.logContainer = [];
     const renderer = new ConceptRenderer();
 
-    markdown = fixCommonElements(markdown, this.eventLogger);
+    markdown = fixCommonElements(markdown, this.eventLogger, this.options);
     markdown = renderer.toDitaConcept(markdown, this.eventLogger);
 
     if (markdown === ``) return ``;
 
     markdown = fixMenuCascadeElements(markdown, this.eventLogger);
-    markdown = convertHtmlTables(markdown, this.eventLogger);
-    markdown = convertNotes(markdown, this.eventLogger);
+
+    if (this.options.htmlCleanup)
+    {
+      markdown = convertHtmlTables(markdown, this.eventLogger);
+      markdown = convertNotes(markdown, this.eventLogger, this.options.flavor);
+    }
+
     markdown = fixConceptReference(markdown, TopicType.Concept, this.eventLogger);
 
     if (markdown === ``) return ``;
@@ -186,14 +197,19 @@ export class MdDita
     this.eventLogger.logContainer = [];
     const renderer = new ReferenceRenderer();
 
-    markdown = fixCommonElements(markdown, this.eventLogger);
+    markdown = fixCommonElements(markdown, this.eventLogger, this.options);
     markdown = renderer.toDitaReference(markdown, this.eventLogger);
 
     if (markdown === ``) return ``;
 
     markdown = fixMenuCascadeElements(markdown, this.eventLogger);
-    markdown = convertHtmlTables(markdown, this.eventLogger);
-    markdown = convertNotes(markdown, this.eventLogger);
+
+    if (this.options.htmlCleanup)
+    {
+      markdown = convertHtmlTables(markdown, this.eventLogger);
+      markdown = convertNotes(markdown, this.eventLogger, this.options.flavor);
+    }
+
     markdown = fixConceptReference(markdown, TopicType.Reference, this.eventLogger);
 
     if (markdown === ``) return ``;
@@ -206,14 +222,19 @@ export class MdDita
     this.eventLogger.logContainer = [];
     const renderer = new TaskRenderer();
 
-    markdown = fixCommonElements(markdown, this.eventLogger);
+    markdown = fixCommonElements(markdown, this.eventLogger, this.options);
     markdown = renderer.toDitaTask(markdown, this.eventLogger);
 
     if (markdown === ``) return ``;
 
     markdown = fixMenuCascadeElements(markdown, this.eventLogger);
-    markdown = convertHtmlTables(markdown, this.eventLogger);
-    markdown = convertNotes(markdown, this.eventLogger);
+
+    if (this.options.htmlCleanup)
+    {
+      markdown = convertHtmlTables(markdown, this.eventLogger);
+      markdown = convertNotes(markdown, this.eventLogger, this.options.flavor);
+    }
+
     markdown = fixTask(markdown, this.eventLogger);
 
     if (markdown === ``) return ``;

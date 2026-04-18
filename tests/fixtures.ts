@@ -93,3 +93,36 @@ Some context before the steps.
 export const TASK_NO_H1 = `## No H1
 
 1. A step without a topic title`;
+
+// ---------------------------------------------------------------------------
+// GFM alert fixtures
+// ---------------------------------------------------------------------------
+
+export const GFM_ALERT_NOTE = `# My Topic
+
+> [!NOTE]
+> This is a note.`;
+
+export const GFM_ALERT_TIP = `# My Topic
+
+> [!TIP]
+> This is a tip.`;
+
+export const GFM_ALERT_IMPORTANT = `# My Topic
+
+> [!IMPORTANT]
+> This is important.`;
+
+export const GFM_ALERT_WARNING = `# My Topic
+
+> [!WARNING]
+> This is a warning.`;
+
+export const GFM_ALERT_CAUTION = `# My Topic
+
+> [!CAUTION]
+> This is a caution.`;
+
+export const GFM_PLAIN_BLOCKQUOTE = `# My Topic
+
+> This is a plain blockquote.`;

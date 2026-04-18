@@ -31,7 +31,7 @@ import {
 // verbose=false → suppresses console output during tests.
 let mdDita: MdDita;
 beforeEach(() => {
-    mdDita = new MdDita(false);
+    mdDita = new MdDita({ verbose: false });
 });
 
 // ---------------------------------------------------------------------------

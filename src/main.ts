@@ -1,40 +1,58 @@
 #!/usr/bin/env node
 import { readFileSync, writeFileSync } from "fs";
 import { MdDita } from "./md-dita";
+import { FlavorType } from "./types";
 
-const USAGE = `Usage: node md-dita.js --input <file> --type <concept|reference|task> [--output <file>]`;
+const VALID_FLAVORS = Object.values(FlavorType) as string[];
+const USAGE = `Usage: node md-dita.js --input <file> --type <concept|reference|task> [--output <file>] [--flavor <commonmark|gfm|mkdocs|docusaurus>] [--no-html-cleanup]`;
 
 const main = async () =>
 {
+    const args = process.argv;
+
     // Get the index of the --input flag
-    const inputIndex = process.argv.indexOf('--input');
+    const inputIndex = args.indexOf('--input');
     // Get the index of the --type flag
-    const typeIndex = process.argv.indexOf('--type');
+    const typeIndex = args.indexOf('--type');
     // Get the index of the --output flag
-    const outputIndex = process.argv.indexOf('--output');
+    const outputIndex = args.indexOf('--output');
+    // Get the index of the --flavor flag
+    const flavorIndex = args.indexOf('--flavor');
 
     // Validate --input flag
-    if (inputIndex === -1 || process.argv[inputIndex + 1] === undefined)
+    if (inputIndex === -1 || args[inputIndex + 1] === undefined)
     {
         console.error(`Missing --input flag.\n${USAGE}`);
         process.exit(1);
     }
 
     // Validate --type flag
-    if (typeIndex === -1 || process.argv[typeIndex + 1] === undefined)
+    if (typeIndex === -1 || args[typeIndex + 1] === undefined)
     {
         console.error(`Missing --type flag.\n${USAGE}`);
         process.exit(1);
     }
 
+    // Resolve and validate --flavor flag (default: commonmark)
+    const flavorRaw = flavorIndex !== -1 ? args[flavorIndex + 1] : FlavorType.CommonMark;
+    if (!VALID_FLAVORS.includes(flavorRaw))
+    {
+        console.error(`Invalid --flavor value: "${flavorRaw}". Valid flavors: ${VALID_FLAVORS.join(', ')}\n${USAGE}`);
+        process.exit(1);
+    }
+    const flavor = flavorRaw as FlavorType;
+
+    // --no-html-cleanup disables HTML table/note conversion
+    const htmlCleanup = !args.includes('--no-html-cleanup');
+
     // Read the MD file and store it
-    let fileContents = readFileSync(process.argv[inputIndex + 1], { encoding: 'utf8', flag: 'r' });
+    let fileContents = readFileSync(args[inputIndex + 1], { encoding: 'utf8', flag: 'r' });
 
     // Initialize the MdDita class
-    const mdToDita = new MdDita(true);
+    const mdToDita = new MdDita({ flavor, htmlCleanup, verbose: true });
 
     // Convert the file depending on the selected type
-    switch (process.argv[typeIndex + 1])
+    switch (args[typeIndex + 1])
     {
         case 'concept':
             fileContents = await mdToDita.mdToConcept(fileContents);
@@ -46,13 +64,13 @@ const main = async () =>
             fileContents = await mdToDita.mdToTask(fileContents);
             break;
         default:
-            console.error(`Invalid type: "${process.argv[typeIndex + 1]}". Valid types: concept, reference, task\n${USAGE}`);
+            console.error(`Invalid type: "${args[typeIndex + 1]}". Valid types: concept, reference, task\n${USAGE}`);
             process.exit(1);
     }
 
     // Resolve output path (--output flag or default to output.xml)
-    const outputPath = (outputIndex !== -1 && process.argv[outputIndex + 1] !== undefined)
-        ? process.argv[outputIndex + 1]
+    const outputPath = (outputIndex !== -1 && args[outputIndex + 1] !== undefined)
+        ? args[outputIndex + 1]
         : `output.xml`;
 
     // Write the converted file

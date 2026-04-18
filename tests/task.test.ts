@@ -12,7 +12,7 @@ import {
 
 let mdDita: MdDita;
 beforeEach(() => {
-    mdDita = new MdDita(false);
+    mdDita = new MdDita({ verbose: false });
 });
 
 // ---------------------------------------------------------------------------
