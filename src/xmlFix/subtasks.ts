@@ -24,15 +24,25 @@ const generateSubTasks = (xml: string, eventLogger: simpleLogger): string[] =>
         return [];
     }
 
-    if (subtaskPattern.test(taskBody)) 
+    // Note: avoid reusing global regex between .test() and .match() — lastIndex state causes inconsistency
+    const subtaskMatches = taskBody.match(subtaskPattern);
+    if (subtaskMatches)
     { // Verify if there are more than 1 subtasks
-        subTasks = taskBody.match(subtaskPattern)!; // Get all subtasks
+        subTasks = subtaskMatches; // Get all subtasks
 
         for (let element of subTasks)
             taskBody = taskBody.replace(element, ``); // Remove them from taskbody
     }
 
-    subTasks.push(taskBody.match(finalSubtaskPattern)![0]); // Grab the "lonely" subtask
+    // Grab the "lonely" last subtask
+    const finalSubtaskMatch = taskBody.match(finalSubtaskPattern);
+    if (finalSubtaskMatch)
+        subTasks.push(finalSubtaskMatch[0]);
+    else
+    {
+        eventLogger.logInfo(`No trailing subtask found after processing.`);
+        return subTasks; // return whatever was collected so far
+    }
 
     eventLogger.logInfo(`Subtasks generated.`);
     return subTasks;

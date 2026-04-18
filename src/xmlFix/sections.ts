@@ -56,17 +56,26 @@ const generateSections = (xml: string, type: TopicType, eventLogger: simpleLogge
     }
 
     // Check how many sections there are
-    if (sectionPattern.test(topicBody)) 
+    // Note: avoid reusing global regex between .test() and .match() — lastIndex state causes inconsistency
+    const sectionMatches = topicBody.match(sectionPattern);
+    if (sectionMatches)
     {
         // Grab everything between two opening section tags
-        sections = topicBody.match(sectionPattern)!;
+        sections = sectionMatches;
 
         for (let element of sections)
             topicBody = topicBody.replace(element, ``); // Remove the contents from the actual XML object
     }
 
     // The last section always remains by itself. Grab it as well
-    sections.push(topicBody.match(lastSectionPattern)![0]); 
+    const lastSectionMatch = topicBody.match(lastSectionPattern);
+    if (lastSectionMatch)
+        sections.push(lastSectionMatch[0]);
+    else
+    {
+        eventLogger.logInfo(`No trailing section found after processing.`);
+        return sections; // return whatever was collected so far
+    }
 
     eventLogger.logInfo(`Sections generated.`);
     return sections;

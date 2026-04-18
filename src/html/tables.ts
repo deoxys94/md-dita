@@ -23,7 +23,7 @@ export const convertHtmlTables = (xml: string, eventLogger: simpleLogger): strin
         return xml;
     }
 
-    tables.each((i, tableEl) =>
+    tables.each((_i, tableEl) =>
     {
         const tableHtml = $xml.html(tableEl);
         const convertedTable = htmlToDitaTable(unmergeCells(tableHtml), hardLineBreak, eventLogger);
@@ -50,10 +50,10 @@ const unmergeCells = (html: string): string =>
     $('col, colgroup').remove();
 
     // Iterate through each row in the table
-    $('tr').each((rowIndex, row) =>
+    $('tr').each((_rowIndex, row) =>
     {
         // Iterate through each cell (td or th) in the current row
-        $(row).find('td, th').each((colIndex, cell) =>
+        $(row).find('td, th').each((_colIndex, cell) =>
         {
             // Parse colspan and rowspan attributes, defaulting to 1 if not present
             const colspan = parseInt($(cell).attr('colspan') || '1');
@@ -141,10 +141,10 @@ function htmlToDitaTable(html: string, hardLineBreak: RegExp, eventLogger: simpl
             ditaTable.push('<thead>');
 
             // Process header rows directly with Cheerio
-            $('thead tr').each((i, row) =>
+            $('thead tr').each((_i, row) =>
             {
                 ditaTable.push('<row>');
-                $(row).find('th, td').each((j, cell) =>
+                $(row).find('th, td').each((_j, cell) =>
                 {
                     ditaTable.push('<entry><p>' + $(cell).html() + '</p></entry>');
                 });
@@ -156,12 +156,12 @@ function htmlToDitaTable(html: string, hardLineBreak: RegExp, eventLogger: simpl
 
         // Process table body (tbody)
         ditaTable.push('<tbody>');
-        $('tbody tr').each((i, elem) => 
+        $('tbody tr').each((_i, elem) =>
         {
             ditaTable.push('<row>');
             $(elem)
                 .find('td')
-                .each((j, cell) =>
+                .each((_j, cell) =>
                 {
                     // Get cell content
                     const cellContent = $(cell).html() || '';
