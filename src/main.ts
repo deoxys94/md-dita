@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync } from "fs";
 import { MdDita } from "./md-dita";
 
-const USAGE = `Usage: node md-dita.js --input <file> --type <concept|reference|task>`;
+const USAGE = `Usage: node md-dita.js --input <file> --type <concept|reference|task> [--output <file>]`;
 
 const main = async () =>
 {
@@ -10,6 +10,8 @@ const main = async () =>
     const inputIndex = process.argv.indexOf('--input');
     // Get the index of the --type flag
     const typeIndex = process.argv.indexOf('--type');
+    // Get the index of the --output flag
+    const outputIndex = process.argv.indexOf('--output');
 
     // Validate --input flag
     if (inputIndex === -1 || process.argv[inputIndex + 1] === undefined)
@@ -48,8 +50,14 @@ const main = async () =>
             process.exit(1);
     }
 
+    // Resolve output path (--output flag or default to output.xml)
+    const outputPath = (outputIndex !== -1 && process.argv[outputIndex + 1] !== undefined)
+        ? process.argv[outputIndex + 1]
+        : `output.xml`;
+
     // Write the converted file
-    writeFileSync(`output.xml`, fileContents);
+    writeFileSync(outputPath, fileContents);
+    console.log(`File saved in ${outputPath}`)
 };
 
 main().catch((error) =>
