@@ -18,7 +18,7 @@
 		"type": "git",
 		"url": "git+https://github.com/aldair-torres/md-dita.git"
 	},
-	"license": "GPL-2.0-or-later",
+	"license": "MIT",
 	"author": "Aldair Torres",
 	"main": "./dist/md-dita.js",
 	"module": "./dist/md-dita.js",

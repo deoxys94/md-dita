@@ -4,4 +4,5 @@ dist/
 .vscode/
 .claude/
 *.md
+!README.md
 *.xml
